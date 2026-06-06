@@ -3,12 +3,10 @@ import * as setup from '@/lib/setupActions.js';
 export const dynamic = 'force-dynamic';
 
 // Current setup state (configured cameras + Eufy login status).
-export async function GET() {
-  return Response.json(await setup.getState());
-}
+export const GET = async () => Response.json(await setup.getState());
 
 // One endpoint for every setup action, chosen by `action` in the body.
-export async function POST(req) {
+export const POST = async (req) => {
   const body = await req.json().catch(() => ({}));
   try {
     switch (body.action) {
@@ -25,4 +23,4 @@ export async function POST(req) {
   } catch (e) {
     return Response.json({ error: String(e?.message || e) }, { status: 400 });
   }
-}
+};

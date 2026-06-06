@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "engines": { "node": ">=18.18" },
+  "engines": {
+    "node": ">=20.9"
+  },
   "scripts": {
     "dev": "node server.js",
     "build": "next build",
@@ -11,11 +13,14 @@
     "test": "node --test"
   },
   "dependencies": {
-    "next": "^14.2.5",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "ws": "^8.18.0",
+    "@reactuses/core": "^6.3.2",
+    "clsx": "^2.1.1",
     "eufy-security-client": "^3.8.0",
-    "jmuxer": "^2.0.5"
+    "jmuxer": "^2.0.5",
+    "next": "^16.2.7",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "swr": "^2.4.1",
+    "ws": "^8.18.0"
   }
 }

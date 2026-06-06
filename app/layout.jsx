@@ -5,10 +5,10 @@ export const metadata = {
   description: 'Bekijk je eigen Eufy-camera’s lokaal',
 };
 
-export default function RootLayout({ children }) {
-  return (
-    <html lang="nl">
-      <body>{children}</body>
-    </html>
-  );
-}
+const RootLayout = ({ children }) => (
+  <html lang="nl">
+    <body>{children}</body>
+  </html>
+);
+
+export default RootLayout;

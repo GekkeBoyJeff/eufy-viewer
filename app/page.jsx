@@ -1,51 +1,35 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
+import useSWR from 'swr';
+import { useLocalStorage, useToggle } from '@reactuses/core';
 import Toolbar from '@/components/Toolbar.jsx';
 import CameraPane from '@/components/CameraPane.jsx';
 
-const STORAGE_KEY = 'eufyViewer.v1';
 const DEFAULTS = { mode: 'split-h', mainId: null, pipOn: true };
+const fetchJson = (url) => fetch(url).then((r) => r.json());
 
 // The viewer: shows all cameras, lets you switch layout (horizontal / vertical /
-// focus+PiP), and remembers your choice. Status and retries are handled per camera.
-export default function ViewerPage() {
-  const [cameras, setCameras] = useState([]);
-  const [eufy, setEufy] = useState({ configured: false, connected: false });
-  const [loading, setLoading] = useState(true);
-  const [cfg, setCfg] = useState(DEFAULTS);
-  const [debugOn, setDebugOn] = useState(false);
+// focus+PiP) and remembers your choice. Each camera handles its own status + retry.
+const ViewerPage = () => {
+  // SWR polls the list every 2.5s while it's still empty, then stops once cameras arrive.
+  const { data } = useSWR('/api/cameras', fetchJson, {
+    refreshInterval: (latest) => (latest?.cameras?.length ? 0 : 2500),
+    revalidateOnFocus: false,
+  });
+  const loading = !data;
+  const eufy = data?.eufy ?? { configured: false, connected: false };
+  const cameras = data?.cameras ?? [];
+
+  const [stored, setCfg] = useLocalStorage('eufyViewer.v1', DEFAULTS);
+  const cfg = stored ?? DEFAULTS;
+  const [debugOn, toggleDebug] = useToggle(false);
   const [logLines, setLogLines] = useState([]);
-  const cfgLoaded = useRef(false);
   const logRef = useRef(null);
 
-  // Remember the last layout you used.
-  useEffect(() => {
-    try { const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); setCfg({ ...DEFAULTS, ...saved }); } catch {}
-    cfgLoaded.current = true;
-  }, []);
-  useEffect(() => { if (cfgLoaded.current) { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(cfg)); } catch {} } }, [cfg]);
-
-  // Load the camera list; keep polling briefly while RTSP is still being set up.
-  useEffect(() => {
-    let stop = false; let tries = 0; let timer;
-    const tick = async () => {
-      try {
-        const data = await (await fetch('/api/cameras')).json();
-        if (stop) return;
-        setLoading(false);
-        setEufy(data.eufy);
-        if (data.cameras.length) { setCameras(data.cameras); return; }
-        if (data.eufy.connected && tries < 12) { tries += 1; timer = setTimeout(tick, 2500); }
-      } catch { if (!stop) timer = setTimeout(tick, 3000); }
-    };
-    tick();
-    return () => { stop = true; clearTimeout(timer); };
-  }, []);
-
-  // Make sure the focused camera still exists.
+  // Keep the focused camera valid as cameras load.
   useEffect(() => {
     if (cameras.length && (!cfg.mainId || !cameras.find((c) => c.id === cfg.mainId))) {
-      setCfg((p) => ({ ...p, mainId: cameras[0].id }));
+      setCfg({ ...cfg, mainId: cameras[0].id });
     }
   }, [cameras]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -53,14 +37,10 @@ export default function ViewerPage() {
 
   const dbg = (scope, msg) => setLogLines((prev) => [...prev.slice(-199), `${new Date().toLocaleTimeString('nl-NL')}  ${scope}  ${msg}`]);
 
-  const setMode = (mode) => setCfg((p) => ({ ...p, mode }));
-  const swap = () => setCfg((p) => {
-    if (cameras.length < 2) return p;
-    const other = cameras.find((c) => c.id !== p.mainId);
-    return other ? { ...p, mode: 'focus', mainId: other.id } : p;
-  });
-  const togglePip = () => setCfg((p) => ({ ...p, pipOn: !p.pipOn }));
-  const onSelect = (cam) => setCfg((p) => (p.mode === 'focus' ? { ...p, mainId: cam.id } : { ...p, mode: 'focus', mainId: cam.id }));
+  const setMode = (mode) => setCfg({ ...cfg, mode });
+  const swap = () => { const other = cameras.find((c) => c.id !== cfg.mainId); if (other) setCfg({ ...cfg, mode: 'focus', mainId: other.id }); };
+  const togglePip = () => setCfg({ ...cfg, pipOn: !cfg.pipOn });
+  const selectCamera = (cam) => setCfg(cfg.mode === 'focus' ? { ...cfg, mainId: cam.id } : { ...cfg, mode: 'focus', mainId: cam.id });
   const fullscreen = () => { if (document.fullscreenElement) document.exitFullscreen?.(); else document.documentElement.requestFullscreen?.(); };
 
   const mainName = cameras.find((c) => c.id === cfg.mainId)?.name;
@@ -69,7 +49,7 @@ export default function ViewerPage() {
     <div className="viewer-root">
       <Toolbar
         mode={cfg.mode} onMode={setMode} onSwap={swap} onTogglePip={togglePip} pipOn={cfg.pipOn} mainName={mainName}
-        onFullscreen={fullscreen} onToggleDebug={() => setDebugOn((v) => !v)}
+        onFullscreen={fullscreen} onToggleDebug={() => toggleDebug()}
       />
 
       {loading ? (
@@ -86,7 +66,7 @@ export default function ViewerPage() {
           {cameras.map((cam) => {
             const role = cfg.mode === 'focus' ? (cam.id === cfg.mainId ? 'main' : 'pip') : 'split';
             const hidden = cfg.mode === 'focus' && role === 'pip' && !cfg.pipOn;
-            return <CameraPane key={cam.id} camera={cam} role={role} hidden={hidden} onSelect={onSelect} dbg={dbg} />;
+            return <CameraPane key={cam.id} camera={cam} role={role} hidden={hidden} onSelect={selectCamera} dbg={dbg} />;
           })}
         </div>
       )}
@@ -99,4 +79,6 @@ export default function ViewerPage() {
       )}
     </div>
   );
-}
+};
+
+export default ViewerPage;

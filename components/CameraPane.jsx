@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
+import clsx from 'clsx';
 import { LivePlayer } from './livePlayer.js';
 
 const LABELS = { idle: 'Inactief', connecting: 'Verbinden…', live: 'Live', error: 'Geen beeld', retrying: 'Opnieuw…' };
@@ -7,8 +8,8 @@ const START_BACKOFF = 4000, MAX_BACKOFF = 60000, NO_FRAME_MS = 15000;
 
 // One camera tile: shows the video and always shows its status. It connects on its
 // own, and if the stream fails it retries with a growing wait (so a busy camera isn't
-// hammered). `role` ('split' | 'main' | 'pip') only changes how it's placed.
-export default function CameraPane({ camera, role, hidden, onState, onSelect, dbg }) {
+// hammered). `role` ('split' | 'main' | 'pip') only changes how the tile is placed.
+const CameraPane = ({ camera, role, hidden, onSelect, dbg }) => {
   const videoRef = useRef(null);
   const machineRef = useRef(null);
   const [status, setStatus] = useState('idle');
@@ -18,7 +19,7 @@ export default function CameraPane({ camera, role, hidden, onState, onSelect, db
     const m = { player: new LivePlayer(videoRef.current), timers: {}, backoff: START_BACKOFF, status: 'idle', stopped: false };
     machineRef.current = m;
 
-    const set = (s, d) => { m.status = s; setStatus(s); setDetail(d || LABELS[s]); onState?.(camera.id, s); dbg?.(camera.name, `${s}${d ? ' — ' + d : ''}`); };
+    const set = (s, d) => { m.status = s; setStatus(s); setDetail(d || LABELS[s]); dbg?.(camera.name, `${s}${d ? ' — ' + d : ''}`); };
     const clear = () => { clearTimeout(m.timers.noFrame); clearTimeout(m.timers.retry); clearInterval(m.timers.count); };
 
     const begin = () => {
@@ -48,13 +49,12 @@ export default function CameraPane({ camera, role, hidden, onState, onSelect, db
     m.retryNow = () => { clear(); try { m.player.stop(); } catch {} m.backoff = START_BACKOFF; begin(); };
     begin();
     return () => { m.stopped = true; clear(); try { m.player.stop(); } catch {} };
-  }, [camera.id]); // alleen opnieuw opzetten als de camera wisselt, niet bij layout-wissel
+  }, [camera.id]); // alleen opnieuw opzetten bij een andere camera, niet bij layout-wissel
 
-  const roleClass = role === 'main' ? 'is-main' : role === 'pip' ? 'is-pip' : '';
   // The dot in the chip is the at-a-glance status; the center only shows when there's
   // something to say or do (loading, idle, error). So the status never appears twice.
   return (
-    <div className={`pane ${roleClass} ${hidden ? 'pane-hidden' : ''}`} data-state={status} onClick={() => onSelect?.(camera)}>
+    <div className={clsx('pane', role === 'main' && 'is-main', role === 'pip' && 'is-pip', hidden && 'pane-hidden')} data-state={status} onClick={() => onSelect?.(camera)}>
       <video ref={videoRef} autoPlay muted playsInline className="pane-video" />
       <div className="pane-center">
         {status === 'connecting' && (<><div className="spinner" /><div className="center-msg subtle">Verbinden…</div></>)}
@@ -72,4 +72,6 @@ export default function CameraPane({ camera, role, hidden, onState, onSelect, db
       </div>
     </div>
   );
-}
+};
+
+export default CameraPane;

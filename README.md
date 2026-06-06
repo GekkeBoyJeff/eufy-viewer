@@ -8,7 +8,7 @@ overige via je **Eufy-account** (P2P). Alles draait op je eigen apparaat in je n
 > een microSD, HomeBase 3 of NAS).
 
 ## Wat je nodig hebt
-- **Node.js 18.18+** en **ffmpeg** (op de Chromebook: in de Linux-container installeren).
+- **Node.js 20.9+** en **ffmpeg** (op de Chromebook: in de Linux-container installeren).
 - Hetzelfde netwerk als de camera's.
 
 ## Instellen

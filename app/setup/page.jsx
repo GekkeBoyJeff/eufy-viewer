@@ -2,12 +2,12 @@
 import { useEffect, useState } from 'react';
 
 // Talk to the one setup endpoint with a named action.
-async function post(action, body = {}) {
+const post = async (action, body = {}) => {
   const res = await fetch('/api/setup', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action, ...body }) });
   return res.json();
-}
+};
 
-export default function SetupPage() {
+const SetupPage = () => {
   const [state, setState] = useState({ cameras: [], solocams: [], eufy: { configured: false, connected: false } });
   const [account, setAccount] = useState({ username: '', password: '', country: 'NL' });
   const [login, setLogin] = useState({ status: 'idle' }); // status, message, captchaId, image
@@ -18,13 +18,13 @@ export default function SetupPage() {
   const refresh = async () => { try { setState(await (await fetch('/api/setup')).json()); } catch {} };
   useEffect(() => { refresh(); }, []);
 
-  // ── Eufy login ──
+  // Eufy login
   const handleLoginResult = (r) => { setLogin(r); if (r.status === 'connected') refresh(); };
   const connect = async () => { setLogin({ status: 'busy' }); handleLoginResult(await post('eufyConnect', account)); };
   const sendCaptcha = async (code) => { setLogin((l) => ({ ...l, status: 'busy' })); handleLoginResult(await post('eufyCaptcha', { captchaId: login.captchaId, code })); };
   const sendTfa = async (code) => { setLogin((l) => ({ ...l, status: 'busy' })); handleLoginResult(await post('eufyTfa', { code })); };
 
-  // ── Indoor Cam (RTSP) ──
+  // Indoor Cam (RTSP)
   const testRtsp = async () => {
     setRtsp({ ok: false, text: 'Testen…' });
     const r = await post('testRtsp', cam);
@@ -38,13 +38,13 @@ export default function SetupPage() {
   };
   const removeCam = async (id) => { await post('deleteCamera', { id }); refresh(); };
 
-  // ── Diagnose ──
+  // Diagnose
   const loadDiag = async () => { const r = await post('diagnostics'); setDiag(r.cameras || []); };
 
   return (
     <div className="setup">
       <header>
-        <h1>Setup</h1>
+        <h1>Instellingen</h1>
         <a className="link" href="/">← naar de kijker</a>
       </header>
 
@@ -69,10 +69,10 @@ export default function SetupPage() {
         </div>
       </section>
 
-      {/* SoloCams / Eufy account */}
+      {/* Eufy account */}
       <section className="panel">
-        <h2>Eufy-account (voor camera’s via je account)</h2>
-        <p className="hint">Aanbevolen: een <strong>apart Eufy-account</strong> (deel je huis ermee als admin, 2FA uit). {state.eufy.connected ? '✓ Verbonden.' : state.eufy.configured ? 'Ingesteld, niet verbonden.' : 'Nog niet ingesteld.'}</p>
+        <h2>Eufy-account (inloggegevens — lokaal opgeslagen)</h2>
+        <p className="hint">Je gegevens worden alleen op dit apparaat bewaard (<code>.env.local</code>). Aanbevolen: een <strong>apart Eufy-account</strong> (deel je huis ermee als admin, 2FA uit). {state.eufy.connected ? '✓ Verbonden.' : state.eufy.configured ? 'Ingesteld, niet verbonden.' : 'Nog niet ingesteld.'}</p>
         {!state.eufy.connected && (
           <div className="form">
             <label>E-mail <input type="email" value={account.username} onChange={(e) => setAccount({ ...account, username: e.target.value })} /></label>
@@ -101,9 +101,9 @@ export default function SetupPage() {
       </section>
     </div>
   );
-}
+};
 
-function CaptchaForm({ image, onSubmit }) {
+const CaptchaForm = ({ image, onSubmit }) => {
   const [code, setCode] = useState('');
   return (
     <div className="form">
@@ -113,9 +113,9 @@ function CaptchaForm({ image, onSubmit }) {
       <div className="row"><button className="btn primary" onClick={() => onSubmit(code)}>Verzenden</button></div>
     </div>
   );
-}
+};
 
-function CodeForm({ label, onSubmit }) {
+const CodeForm = ({ label, onSubmit }) => {
   const [code, setCode] = useState('');
   return (
     <div className="form">
@@ -123,9 +123,9 @@ function CodeForm({ label, onSubmit }) {
       <div className="row"><button className="btn primary" onClick={() => onSubmit(code)}>Verzenden</button></div>
     </div>
   );
-}
+};
 
-function DiagCard({ cam }) {
+const DiagCard = ({ cam }) => {
   const [test, setTest] = useState(null);
   const run = async () => {
     setTest('Testen… (max ~15s)');
@@ -144,4 +144,6 @@ function DiagCard({ cam }) {
       {cam.url && <div className="row" style={{ marginTop: '.4rem' }}><button className="btn small" onClick={run}>Test stream</button>{test && <span className="result">{test}</span>}</div>}
     </div>
   );
-}
+};
+
+export default SetupPage;
