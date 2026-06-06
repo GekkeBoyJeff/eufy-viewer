@@ -4,17 +4,20 @@ import useSWR from 'swr';
 import { useLocalStorage, useToggle } from '@reactuses/core';
 import Toolbar from '@/components/Toolbar.jsx';
 import CameraPane from '@/components/CameraPane.jsx';
+import AccountLogin from '@/components/AccountLogin.jsx';
+import SettingsModal from '@/components/SettingsModal.jsx';
 
 const DEFAULTS = { mode: 'split-h', mainId: null, pipOn: true };
 const fetchJson = (url) => fetch(url).then((r) => r.json());
 
-// The viewer: shows all cameras, lets you switch layout (horizontal / vertical /
-// focus+PiP) and remembers your choice. Each camera handles its own status + retry.
+// The viewer: first run shows a login screen; once your account is set, it shows all
+// cameras with a layout switch (horizontal / vertical / focus+PiP) and remembers it.
 const ViewerPage = () => {
-  // SWR polls the list every 2.5s while it's still empty, then stops once cameras arrive.
-  const { data } = useSWR('/api/cameras', fetchJson, {
+  // Poll the list every 2.5s while it's still empty, then stop once cameras arrive.
+  const { data, mutate } = useSWR('/api/cameras', fetchJson, {
     refreshInterval: (latest) => (latest?.cameras?.length ? 0 : 2500),
     revalidateOnFocus: false,
+    keepPreviousData: true,
   });
   const loading = !data;
   const eufy = data?.eufy ?? { configured: false, connected: false };
@@ -23,16 +26,13 @@ const ViewerPage = () => {
   const [stored, setCfg] = useLocalStorage('eufyViewer.v1', DEFAULTS);
   const cfg = stored ?? DEFAULTS;
   const [debugOn, toggleDebug] = useToggle(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [logLines, setLogLines] = useState([]);
   const logRef = useRef(null);
 
-  // Keep the focused camera valid as cameras load.
   useEffect(() => {
-    if (cameras.length && (!cfg.mainId || !cameras.find((c) => c.id === cfg.mainId))) {
-      setCfg({ ...cfg, mainId: cameras[0].id });
-    }
+    if (cameras.length && (!cfg.mainId || !cameras.find((c) => c.id === cfg.mainId))) setCfg({ ...cfg, mainId: cameras[0].id });
   }, [cameras]); // eslint-disable-line react-hooks/exhaustive-deps
-
   useEffect(() => { if (logRef.current) logRef.current.scrollTop = logRef.current.scrollHeight; }, [logLines]);
 
   const dbg = (scope, msg) => setLogLines((prev) => [...prev.slice(-199), `${new Date().toLocaleTimeString('nl-NL')}  ${scope}  ${msg}`]);
@@ -45,31 +45,36 @@ const ViewerPage = () => {
 
   const mainName = cameras.find((c) => c.id === cfg.mainId)?.name;
 
+  // First run: no account yet → a calm, centered login screen.
+  if (!loading && !eufy.configured) {
+    return <div className="screen fade-in"><AccountLogin onConnected={() => mutate()} /></div>;
+  }
+
   return (
     <div className="viewer-root">
       <Toolbar
         mode={cfg.mode} onMode={setMode} onSwap={swap} onTogglePip={togglePip} pipOn={cfg.pipOn} mainName={mainName}
-        onFullscreen={fullscreen} onToggleDebug={() => toggleDebug()}
+        onFullscreen={fullscreen} onOpenSettings={() => setSettingsOpen(true)} onToggleDebug={() => toggleDebug()}
       />
 
-      {loading ? (
-        <div className="empty-viewer"><div className="loading"><div className="spinner" /><p>Verbinden met de server…</p></div></div>
-      ) : cameras.length === 0 ? (
-        <div className="empty-viewer">
+      {loading || cameras.length === 0 ? (
+        <div className="empty-viewer fade-in">
           <div className="loading">
-            {eufy.connected && <div className="spinner" />}
-            <p>{eufy.connected ? 'Camera’s worden geladen (RTSP wordt klaargezet)…' : (<>Geen camera’s gevonden. Open <a className="link" href="/setup">Instellingen</a> om in te loggen of een camera toe te voegen.</>)}</p>
+            <div className="spinner" />
+            <p>{loading ? 'Verbinden met de server…' : 'Camera’s worden geladen…'}</p>
           </div>
         </div>
       ) : (
-        <div className={`stage mode-${cfg.mode}`}>
+        <div className={`stage mode-${cfg.mode} fade-in`}>
           {cameras.map((cam) => {
             const role = cfg.mode === 'focus' ? (cam.id === cfg.mainId ? 'main' : 'pip') : 'split';
             const hidden = cfg.mode === 'focus' && role === 'pip' && !cfg.pipOn;
-            return <CameraPane key={cam.id} camera={cam} role={role} hidden={hidden} onSelect={selectCamera} dbg={dbg} />;
+            return <CameraPane key={`${cam.id}:${cam.type}`} camera={cam} role={role} hidden={hidden} onSelect={selectCamera} dbg={dbg} />;
           })}
         </div>
       )}
+
+      {settingsOpen && <SettingsModal onClose={() => setSettingsOpen(false)} onConnected={() => mutate()} />}
 
       {debugOn && (
         <div className="debug-panel">

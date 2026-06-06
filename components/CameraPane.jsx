@@ -49,7 +49,7 @@ const CameraPane = ({ camera, role, hidden, onSelect, dbg }) => {
     m.retryNow = () => { clear(); try { m.player.stop(); } catch {} m.backoff = START_BACKOFF; begin(); };
     begin();
     return () => { m.stopped = true; clear(); try { m.player.stop(); } catch {} };
-  }, [camera.id]); // alleen opnieuw opzetten bij een andere camera, niet bij layout-wissel
+  }, [camera.id, camera.type]); // herstart alleen bij een andere camera of ander pad, niet bij layout-wissel
 
   // The dot in the chip is the at-a-glance status; the center only shows when there's
   // something to say or do (loading, idle, error). So the status never appears twice.

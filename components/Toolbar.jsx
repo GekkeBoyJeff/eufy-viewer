@@ -10,7 +10,7 @@ const MODES = [
   { id: 'focus', label: 'Focus' },
 ];
 
-const Toolbar = ({ mode, onMode, onSwap, onTogglePip, pipOn, mainName, onFullscreen, onToggleDebug }) => (
+const Toolbar = ({ mode, onMode, onSwap, onTogglePip, pipOn, mainName, onFullscreen, onOpenSettings, onToggleDebug }) => (
   <div className="topbar">
     <div className="brand"><span className="brand-dot" /><span className="brand-name">Eufy Viewer</span></div>
 
@@ -32,7 +32,7 @@ const Toolbar = ({ mode, onMode, onSwap, onTogglePip, pipOn, mainName, onFullscr
 
     <div className="tools">
       <button className="icon" title="Volledig scherm" onClick={onFullscreen}>⛶</button>
-      <a className="icon" title="Instellingen" href="/setup">⚙</a>
+      <button className="icon" title="Instellingen" onClick={onOpenSettings}>⚙</button>
       <button className="icon" title="Debug-log" onClick={onToggleDebug}>🐞</button>
     </div>
   </div>
