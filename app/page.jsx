@@ -28,7 +28,7 @@ const ViewerPage = () => {
     revalidateOnFocus: false,
     keepPreviousData: true,
   });
-  const eufy = data?.eufy ?? { configured: false, connected: false, connecting: false };
+  const eufy = data?.eufy ?? { configured: false, connected: false };
   const cameras = data?.cameras ?? [];
 
   const [stored, setCfg] = useLocalStorage('eufyViewer.v1', DEFAULTS);
@@ -53,7 +53,6 @@ const ViewerPage = () => {
 
   // ── full-screen states ──
   if (!data) return <Loading text="Verbinden met de server…" />;
-  if (eufy.connecting) return <Loading text="Verbinden met je Eufy-account…" />;
   if (!eufy.connected) return <Centered><AccountLogin configured={eufy.configured} onConnected={() => mutate()} /></Centered>;
 
   const stageClass = clsx('flex-1 min-h-0 bg-black', {

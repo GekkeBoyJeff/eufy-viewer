@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { postSetup } from './api.js';
 
 const field = 'bg-[#0e1014] border border-line text-ink rounded-lg px-3 py-2.5 text-[.9rem] outline-none focus:border-accent transition-colors';
@@ -26,6 +26,10 @@ const AccountLogin = ({ configured, onConnected }) => {
 
   const reconnect = async () => { setBusy(true); setError(''); apply(await postSetup('eufyReconnect')); };
   const connect = async () => { setBusy(true); setError(''); apply(await postSetup('eufyConnect', account)); };
+
+  // Saved account → reconnect right away (shows a spinner, and the captcha/2FA prompt
+  // appears here if needed). This component stays mounted, so the prompt isn't lost.
+  useEffect(() => { if (configured) reconnect(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const submitCaptcha = async () => { setBusy(true); apply(await postSetup('eufyCaptcha', { captchaId: captcha.id, code })); };
   const submitTfa = async () => { setBusy(true); apply(await postSetup('eufyTfa', { code })); };
 
