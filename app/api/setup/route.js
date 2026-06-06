@@ -12,6 +12,7 @@ export const POST = async (req) => {
     switch (body.action) {
       case 'readout': return Response.json(await setup.getReadout());
       case 'eufyConnect': return Response.json(await setup.eufyConnect(body));
+      case 'eufyReconnect': return Response.json(await setup.eufyReconnect());
       case 'eufyCaptcha': return Response.json(await setup.eufyCaptcha(body));
       case 'eufyTfa': return Response.json(await setup.eufyTfa(body));
       default: return Response.json({ error: 'onbekende actie' }, { status: 400 });
