@@ -13,9 +13,10 @@ const fetchJson = (url) => fetch(url).then((r) => r.json());
 // The viewer: first run shows a login screen; once your account is set, it shows all
 // cameras with a layout switch (horizontal / vertical / focus+PiP) and remembers it.
 const ViewerPage = () => {
-  // Poll the list every 2.5s while it's still empty, then stop once cameras arrive.
+  // Keep polling so a camera that resolves a bit later still shows up (every 2.5s while
+  // we have none yet, then a calm 8s once cameras are present — never fully stops).
   const { data, mutate } = useSWR('/api/cameras', fetchJson, {
-    refreshInterval: (latest) => (latest?.cameras?.length ? 0 : 2500),
+    refreshInterval: (latest) => (latest?.cameras?.length ? 8000 : 2500),
     revalidateOnFocus: false,
     keepPreviousData: true,
   });
