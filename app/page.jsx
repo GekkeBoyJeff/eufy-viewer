@@ -11,8 +11,8 @@ const DEFAULTS = { mode: 'split-h', mainId: null, pipOn: true };
 export default function ViewerPage() {
   const [cameras, setCameras] = useState([]);
   const [eufy, setEufy] = useState({ configured: false, connected: false });
+  const [loading, setLoading] = useState(true);
   const [cfg, setCfg] = useState(DEFAULTS);
-  const [stateById, setStateById] = useState({});
   const [debugOn, setDebugOn] = useState(false);
   const [logLines, setLogLines] = useState([]);
   const cfgLoaded = useRef(false);
@@ -32,6 +32,7 @@ export default function ViewerPage() {
       try {
         const data = await (await fetch('/api/cameras')).json();
         if (stop) return;
+        setLoading(false);
         setEufy(data.eufy);
         if (data.cameras.length) { setCameras(data.cameras); return; }
         if (data.eufy.connected && tries < 12) { tries += 1; timer = setTimeout(tick, 2500); }
@@ -51,7 +52,6 @@ export default function ViewerPage() {
   useEffect(() => { if (logRef.current) logRef.current.scrollTop = logRef.current.scrollHeight; }, [logLines]);
 
   const dbg = (scope, msg) => setLogLines((prev) => [...prev.slice(-199), `${new Date().toLocaleTimeString('nl-NL')}  ${scope}  ${msg}`]);
-  const onState = (id, s) => setStateById((prev) => (prev[id] === s ? prev : { ...prev, [id]: s }));
 
   const setMode = (mode) => setCfg((p) => ({ ...p, mode }));
   const swap = () => setCfg((p) => {
@@ -69,19 +69,24 @@ export default function ViewerPage() {
     <div className="viewer-root">
       <Toolbar
         mode={cfg.mode} onMode={setMode} onSwap={swap} onTogglePip={togglePip} pipOn={cfg.pipOn} mainName={mainName}
-        cameras={cameras} stateById={stateById} onFullscreen={fullscreen} onToggleDebug={() => setDebugOn((v) => !v)}
+        onFullscreen={fullscreen} onToggleDebug={() => setDebugOn((v) => !v)}
       />
 
-      {cameras.length === 0 ? (
+      {loading ? (
+        <div className="empty-viewer"><div className="loading"><div className="spinner" /><p>Verbinden met de server…</p></div></div>
+      ) : cameras.length === 0 ? (
         <div className="empty-viewer">
-          {eufy.connected ? 'Camera’s worden geladen (RTSP wordt klaargezet)…' : 'Geen camera’s gevonden. Open /setup om in te loggen of een camera toe te voegen.'}
+          <div className="loading">
+            {eufy.connected && <div className="spinner" />}
+            <p>{eufy.connected ? 'Camera’s worden geladen (RTSP wordt klaargezet)…' : (<>Geen camera’s gevonden. Open <a className="link" href="/setup">Instellingen</a> om in te loggen of een camera toe te voegen.</>)}</p>
+          </div>
         </div>
       ) : (
         <div className={`stage mode-${cfg.mode}`}>
           {cameras.map((cam) => {
             const role = cfg.mode === 'focus' ? (cam.id === cfg.mainId ? 'main' : 'pip') : 'split';
             const hidden = cfg.mode === 'focus' && role === 'pip' && !cfg.pipOn;
-            return <CameraPane key={cam.id} camera={cam} role={role} hidden={hidden} onState={onState} onSelect={onSelect} dbg={dbg} />;
+            return <CameraPane key={cam.id} camera={cam} role={role} hidden={hidden} onSelect={onSelect} dbg={dbg} />;
           })}
         </div>
       )}

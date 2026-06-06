@@ -1,14 +1,15 @@
 'use client';
 
-// The top bar: choose the layout, swap/PiP controls in focus mode, status lights per
-// camera, fullscreen and the debug-log toggle.
+// The top bar: choose the layout, swap/PiP controls in focus mode, and the buttons
+// for fullscreen, settings and the debug log. Per-camera status lives on the camera
+// tiles themselves, so it isn't repeated here.
 const MODES = [
   { id: 'split-h', label: 'Horizontaal' },
   { id: 'split-v', label: 'Verticaal' },
   { id: 'focus', label: 'Focus' },
 ];
 
-export default function Toolbar({ mode, onMode, onSwap, onTogglePip, pipOn, mainName, cameras, stateById, onFullscreen, onToggleDebug }) {
+export default function Toolbar({ mode, onMode, onSwap, onTogglePip, pipOn, mainName, onFullscreen, onToggleDebug }) {
   return (
     <div className="topbar">
       <div className="brand"><span className="brand-dot" /><span className="brand-name">Eufy Viewer</span></div>
@@ -29,13 +30,11 @@ export default function Toolbar({ mode, onMode, onSwap, onTogglePip, pipOn, main
 
       <span className="spacer" />
 
-      <div className="leds" aria-label="Camerastatus">
-        {cameras.map((c) => (
-          <span key={c.id} className="led mini" data-state={stateById[c.id] || 'idle'} title={`${c.name}: ${stateById[c.id] || 'idle'}`} />
-        ))}
+      <div className="tools">
+        <button className="icon" title="Volledig scherm" onClick={onFullscreen}>⛶</button>
+        <a className="icon" title="Instellingen" href="/setup">⚙</a>
+        <button className="icon" title="Debug-log" onClick={onToggleDebug}>🐞</button>
       </div>
-      <button className="icon" title="Volledig scherm" onClick={onFullscreen}>⛶</button>
-      <button className="icon" title="Debug-log" onClick={onToggleDebug}>🐞</button>
     </div>
   );
 }

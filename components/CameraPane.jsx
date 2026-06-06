@@ -51,11 +51,14 @@ export default function CameraPane({ camera, role, hidden, onState, onSelect, db
   }, [camera.id]); // alleen opnieuw opzetten als de camera wisselt, niet bij layout-wissel
 
   const roleClass = role === 'main' ? 'is-main' : role === 'pip' ? 'is-pip' : '';
+  // The dot in the chip is the at-a-glance status; the center only shows when there's
+  // something to say or do (loading, idle, error). So the status never appears twice.
   return (
     <div className={`pane ${roleClass} ${hidden ? 'pane-hidden' : ''}`} data-state={status} onClick={() => onSelect?.(camera)}>
       <video ref={videoRef} autoPlay muted playsInline className="pane-video" />
       <div className="pane-center">
-        {status === 'connecting' && <div className="spinner" />}
+        {status === 'connecting' && (<><div className="spinner" /><div className="center-msg subtle">Verbinden…</div></>)}
+        {status === 'idle' && <div className="center-msg subtle">{detail}</div>}
         {(status === 'error' || status === 'retrying') && (
           <>
             <div className="center-msg">{detail}</div>
@@ -66,7 +69,6 @@ export default function CameraPane({ camera, role, hidden, onState, onSelect, db
       <div className="pane-chip">
         <span className="led" data-state={status} />
         <span className="pane-name">{camera.name}</span>
-        <span className="pane-state">{detail}</span>
       </div>
     </div>
   );
