@@ -10,7 +10,7 @@ export const POST = async (req) => {
   const body = await req.json().catch(() => ({}));
   try {
     switch (body.action) {
-      case 'streamTest': return Response.json(await setup.streamTest(body));
+      case 'readout': return Response.json(await setup.getReadout());
       case 'eufyConnect': return Response.json(await setup.eufyConnect(body));
       case 'eufyCaptcha': return Response.json(await setup.eufyCaptcha(body));
       case 'eufyTfa': return Response.json(await setup.eufyTfa(body));

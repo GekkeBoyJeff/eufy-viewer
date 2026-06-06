@@ -124,3 +124,13 @@ html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text);
 
 .fade-in { animation: fade .25s ease both; }
 @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+
+/* camera read-out cards in settings */
+.diag-card { background: #0e1014; border: 1px solid var(--line); border-radius: 10px; padding: .8rem; margin-top: .7rem; }
+.diag-title { display: flex; align-items: center; gap: .5rem; font-weight: 600; margin-bottom: .5rem; }
+.diag-row { display: flex; justify-content: space-between; gap: 1rem; font-size: .82rem; padding: .14rem 0; border-bottom: 1px solid #15181d; }
+.diag-row:last-of-type { border-bottom: none; }
+.diag-row .k { color: var(--muted); flex: none; }
+.diag-row .v { text-align: right; word-break: break-all; }
+.diag-card .btn { margin-top: .6rem; }
+.props-dump { margin-top: .6rem; max-height: 240px; overflow: auto; background: #0a0b0d; border: 1px solid var(--line); border-radius: 8px; padding: .6rem; font-size: .7rem; line-height: 1.45; color: #aeb4be; white-space: pre-wrap; word-break: break-all; }
