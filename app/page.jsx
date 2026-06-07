@@ -36,12 +36,24 @@ const ViewerPage = () => {
   const [debugOn, toggleDebug] = useToggle(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [logLines, setLogLines] = useState([]);
+  const [serverLines, setServerLines] = useState([]);
   const logRef = useRef(null);
 
   useEffect(() => {
     if (cameras.length && (!cfg.mainId || !cameras.find((c) => c.id === cfg.mainId))) setCfg({ ...cfg, mainId: cameras[0].id });
   }, [cameras]); // eslint-disable-line react-hooks/exhaustive-deps
-  useEffect(() => { if (logRef.current) logRef.current.scrollTop = logRef.current.scrollHeight; }, [logLines]);
+
+  // While the debug panel is open, pull the server log (connecting, streams, restarts).
+  useEffect(() => {
+    if (!debugOn) return undefined;
+    const tick = () => fetch('/api/log').then((r) => r.json()).then((d) => setServerLines(d.lines || [])).catch(() => {});
+    tick();
+    const t = setInterval(tick, 2000);
+    return () => clearInterval(t);
+  }, [debugOn]);
+
+  const allLogLines = [...serverLines, ...logLines].sort((a, b) => (a.slice(0, 8) < b.slice(0, 8) ? -1 : 1));
+  useEffect(() => { if (logRef.current) logRef.current.scrollTop = logRef.current.scrollHeight; }, [serverLines, logLines]);
 
   const dbg = (scope, msg) => setLogLines((prev) => [...prev.slice(-199), `${new Date().toLocaleTimeString('nl-NL')}  ${scope}  ${msg}`]);
   const setMode = (mode) => setCfg({ ...cfg, mode });
@@ -88,7 +100,7 @@ const ViewerPage = () => {
             Debug-log <button className="px-2 py-0.5 text-xs rounded-md bg-[#0e1014] border border-line hover:text-ink" onClick={() => setLogLines([])}>wissen</button>
           </div>
           <div className="flex-1 overflow-auto px-3 py-1.5 font-mono text-[.7rem] leading-relaxed text-[#aeb4be] whitespace-pre-wrap" ref={logRef}>
-            {logLines.map((l, i) => <div key={i}>{l}</div>)}
+            {allLogLines.map((l, i) => <div key={i}>{l}</div>)}
           </div>
         </div>
       )}
