@@ -24,9 +24,24 @@ camera's vanzelf. Je gegevens worden alleen op dit apparaat bewaard (`.env.local
 
 Later iets wijzigen of een camera testen? Klik op **⚙ Instellingen** in de balk.
 
-## Snelkoppeling op de Chromebook
-1. Installeer Node + ffmpeg in de Linux-container en start de app (`npm start`).
-2. Open `http://localhost:3000` in Chrome → menu → *Snelkoppeling maken* → "Openen als venster".
+## Op een Chromebook (voor een niet-techneut)
+Bedoeld om door iemand anders te laten gebruiken: éénmalig opzetten, daarna één klik.
+
+**Eenmalig (door jou):**
+1. Zet de Linux-omgeving aan: *Instellingen → Geavanceerd → Ontwikkelaars → Linux-ontwikkelomgeving → Inschakelen*.
+2. Zet deze projectmap in de Linux-omgeving, open de Terminal erin en draai:
+   ```bash
+   bash setup-chromebook.sh
+   ```
+   Dit installeert ffmpeg + Node, bouwt de app en maakt een app-icoon **Eufy Viewer**.
+3. Zet poort doorsturen aan: *Instellingen → … → Linux → Poort doorsturen* → poort **3000** (TCP).
+   (Zo werkt `http://localhost:3000` én is de app installeerbaar als PWA.)
+4. Optioneel: open `http://localhost:3000` in Chrome → menu (⋮) → **App installeren** → echt
+   app-venster (fullscreen, geen adresbalk).
+
+**Dagelijks (door de gebruiker):** klik op het **Eufy Viewer**-icoon in de app-lade. De
+eerste keer logt hij in z'n Eufy-account in via het scherm in de browser — geen bestanden,
+geen terminal. Daarna onthoudt de app het en herverbindt vanzelf.
 
 ## Mappen
 ```
