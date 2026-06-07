@@ -32,10 +32,10 @@ const Toolbar = ({ mode, onMode, onSwap, onTogglePip, pipOn, mainName, fit, onTo
     </div>
 
     {mode === 'focus' && (
-      <div className="flex items-center gap-1.5 max-[720px]:order-4 max-[720px]:basis-full">
-        {mainName && <span className="text-xs text-muted whitespace-nowrap">Hoofd: {mainName}</span>}
-        <button onClick={onSwap} className={clsx(ctrlBtn, 'min-w-[7rem] max-[720px]:flex-1')}>⇄ Wissel</button>
-        <button onClick={onTogglePip} className={clsx(ctrlBtn, 'min-w-[7rem] max-[720px]:flex-1')}>PiP: {pipOn ? 'aan' : 'uit'}</button>
+      <div className="flex items-center gap-1.5 min-w-0 max-[720px]:order-4 max-[720px]:basis-full">
+        {mainName && <span className="text-xs text-muted truncate min-w-0 max-[720px]:hidden">Hoofd: {mainName}</span>}
+        <button onClick={onSwap} className={clsx(ctrlBtn, 'min-w-[7rem] max-[720px]:min-w-0 max-[720px]:flex-1')}>⇄ Wissel</button>
+        <button onClick={onTogglePip} className={clsx(ctrlBtn, 'min-w-[7rem] max-[720px]:min-w-0 max-[720px]:flex-1')}>PiP: {pipOn ? 'aan' : 'uit'}</button>
       </div>
     )}
 

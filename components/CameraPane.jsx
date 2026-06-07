@@ -57,11 +57,14 @@ const CameraPane = ({ camera, role, hidden, fit, onSelect, dbg }) => {
       ? 'absolute right-4 bottom-4 w-[min(34%,380px)] aspect-video border border-[#2b3340] rounded-xl shadow-[0_10px_34px_rgba(0,0,0,.6)] z-10'
       : 'relative flex-1 min-w-0 min-h-0';
 
+  // Clicking a tile focuses that camera — but the big (main) view does nothing on click,
+  // so only the clickable tiles get the pointer cursor.
+  const clickable = role !== 'main';
   return (
     <div
-      onClick={() => onSelect?.(camera)}
+      onClick={clickable ? () => onSelect?.(camera) : undefined}
       data-state={status}
-      className={clsx('bg-black overflow-hidden cursor-pointer animate-fade', place, hidden && 'hidden')}
+      className={clsx('bg-black overflow-hidden animate-fade', clickable ? 'cursor-pointer' : 'cursor-default', place, hidden && 'hidden')}
     >
       <video ref={videoRef} autoPlay muted playsInline className={clsx('w-full h-full bg-black block', fit === 'cover' ? 'object-cover' : 'object-contain')} />
 

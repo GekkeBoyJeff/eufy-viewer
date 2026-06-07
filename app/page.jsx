@@ -12,7 +12,7 @@ const DEFAULTS = { mode: 'split-h', mainId: null, pipOn: true, fit: 'contain' };
 const fetchJson = (url) => fetch(url).then((r) => r.json());
 
 const Centered = ({ children }) => (
-  <div className="min-h-[100dvh] flex items-center justify-center p-6 animate-fade">{children}</div>
+  <div className="min-h-[100dvh] flex items-center justify-center p-6 animate-rise">{children}</div>
 );
 const Loading = ({ text }) => (
   <Centered><div className="flex flex-col items-center gap-4 text-muted"><div className="spinner" /><p>{text}</p></div></Centered>
@@ -68,7 +68,7 @@ const ViewerPage = () => {
   if (!data) return <Loading text="Verbinden met de server…" />;
   if (!eufy.connected) return <Centered><AccountLogin configured={eufy.configured} onConnected={() => mutate()} /></Centered>;
 
-  const stageClass = clsx('flex-1 min-h-0 bg-black', {
+  const stageClass = clsx('flex-1 min-h-0 bg-black animate-rise', {
     'flex flex-row gap-0.5 max-[720px]:flex-col': cfg.mode === 'split-h',
     'flex flex-col gap-0.5': cfg.mode === 'split-v',
     'relative block': cfg.mode === 'focus',
@@ -83,7 +83,7 @@ const ViewerPage = () => {
       />
 
       {cameras.length === 0 ? (
-        <div className="flex-1 flex items-center justify-center text-muted animate-fade"><div className="flex flex-col items-center gap-4"><div className="spinner" /><p>Camera’s worden geladen…</p></div></div>
+        <div className="flex-1 flex items-center justify-center text-muted animate-rise"><div className="flex flex-col items-center gap-4"><div className="spinner" /><p>Camera’s worden geladen…</p></div></div>
       ) : (
         <div className={stageClass}>
           {cameras.map((cam) => {

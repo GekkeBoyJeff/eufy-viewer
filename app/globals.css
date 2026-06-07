@@ -16,11 +16,13 @@
   --animate-pulse-led: pulseLed 1.2s infinite;
   --animate-blink-led: blinkLed 1s infinite;
   --animate-fade: fade .3s ease both;
+  --animate-rise: rise .5s cubic-bezier(.22,.61,.36,1) both;
 }
 
 @keyframes pulseLed { 50% { opacity: .35; } }
 @keyframes blinkLed { 50% { opacity: .2; } }
 @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 
 html, body { height: 100%; }
 body { margin: 0; background: var(--color-bg); color: var(--color-ink); color-scheme: dark; font-family: system-ui, -apple-system, sans-serif; }
