@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import clsx from 'clsx';
 import { LivePlayer } from './livePlayer.js';
 
-const LABELS = { idle: 'Inactief', connecting: 'Verbinden…', live: 'Live', error: 'Geen beeld', retrying: 'Opnieuw…' };
+const LABELS = { idle: 'Inactief', pending: 'Klaarzetten…', connecting: 'Verbinden…', live: 'Live', error: 'Geen beeld', retrying: 'Opnieuw…' };
 const START_BACKOFF = 4000, MAX_BACKOFF = 60000, NO_FRAME_MS = 15000;
 
 // One camera tile: shows the video and always shows its status. It connects on its own
@@ -16,6 +16,13 @@ const CameraPane = ({ camera, role, hidden, fit, onSelect, dbg }) => {
   const [detail, setDetail] = useState(LABELS.connecting);
 
   useEffect(() => {
+    // RTSP URL not ready yet: show "klaarzetten…" and don't open a stream. The server keeps
+    // resolving it in the background; once `ready` flips true this effect re-runs and connects.
+    if (camera.ready === false) {
+      setStatus('pending'); setDetail('RTSP wordt klaargezet…');
+      dbg?.(camera.name, 'wacht op RTSP-url (klaarzetten…)');
+      return undefined;
+    }
     const m = { player: new LivePlayer(videoRef.current), timers: {}, backoff: START_BACKOFF, status: 'idle', stopped: false };
     machineRef.current = m;
 
@@ -49,7 +56,7 @@ const CameraPane = ({ camera, role, hidden, fit, onSelect, dbg }) => {
     m.retryNow = () => { clear(); try { m.player.stop(); } catch {} m.backoff = START_BACKOFF; begin(); };
     begin();
     return () => { m.stopped = true; clear(); try { m.player.stop(); } catch {} };
-  }, [camera.id, camera.type]); // herstart alleen bij een andere camera of ander pad
+  }, [camera.id, camera.type, camera.ready]); // herstart bij andere camera, ander pad, of zodra RTSP klaar is
 
   const place = role === 'main'
     ? 'absolute inset-0'
@@ -70,6 +77,7 @@ const CameraPane = ({ camera, role, hidden, fit, onSelect, dbg }) => {
 
       <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 pointer-events-none">
         {status === 'connecting' && (<><div className="spinner" /><div className="text-muted text-sm">Verbinden…</div></>)}
+        {status === 'pending' && (<><div className="spinner" /><div className="text-muted text-sm">{detail}</div></>)}
         {status === 'idle' && <div className="text-muted text-sm">{detail}</div>}
         {(status === 'error' || status === 'retrying') && (
           <>

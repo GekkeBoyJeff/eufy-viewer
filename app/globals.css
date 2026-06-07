@@ -32,7 +32,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-ink); color-sc
 @layer components {
   .led { width: 10px; height: 10px; border-radius: 9999px; background: #3a3f4a; display: inline-block; flex: none; }
   .led[data-state="live"] { background: var(--color-live); box-shadow: 0 0 8px var(--color-live); }
-  .led[data-state="connecting"], .led[data-state="retrying"] { background: var(--color-warn); animation: var(--animate-pulse-led); }
+  .led[data-state="connecting"], .led[data-state="retrying"], .led[data-state="pending"] { background: var(--color-warn); animation: var(--animate-pulse-led); }
   .led[data-state="error"] { background: var(--color-err); animation: var(--animate-blink-led); }
 
   .spinner { width: 34px; height: 34px; border: 3px solid var(--color-line); border-top-color: var(--color-accent); border-radius: 9999px; animation: var(--animate-spin-fast); }

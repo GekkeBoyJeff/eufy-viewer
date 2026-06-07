@@ -47,12 +47,15 @@ const CameraReadout = ({ cam }) => {
   const [showAll, setShowAll] = useState(false);
   const p = cam.props || {};
   const st = cam.station || {};
-  const status = liveLine(cam.live);
+  // A camera whose RTSP URL isn't ready yet shows amber + "klaarzetten…" instead of its
+  // live status — so you can see it's still being set up rather than just "niet actief".
+  const pending = cam.ready === false;
+  const status = pending ? { dot: 'pending', text: 'RTSP wordt klaargezet… (probeert automatisch opnieuw)' } : liveLine(cam.live);
   const rows = [
     ['Live-status', status.text],
     ['Model', cam.model],
     ['Serienummer', cam.serial],
-    ['Pad', cam.type === 'rtsp' ? 'RTSP (lokaal)' : 'P2P'],
+    ['Pad', cam.type === 'rtsp' ? 'RTSP (lokaal)' : cam.type === 'rtsp-pending' ? 'RTSP (klaarzetten…)' : 'P2P'],
     ['RTSP-URL', cam.url || '—'],
     ['Lokaal IP', st.lanIpAddress || st.lanIpAddressStandalone || cam.url?.match(/\/\/([^:/]+)/)?.[1] || '—'],
     ['Firmware', p.softwareVersion || '—'],

@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 // (that holds a password) to the browser.
 export const GET = async () => {
   const cameras = cameraService.listCameras().map((c) => ({
-    id: c.id, name: c.name, type: c.type, battery: !!c.battery,
+    id: c.id, name: c.name, type: c.type, battery: !!c.battery, ready: c.ready !== false,
   }));
   return Response.json({ eufy: cameraService.status(), cameras });
 };
