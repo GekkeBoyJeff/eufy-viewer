@@ -27,21 +27,25 @@ Later iets wijzigen of een camera testen? Klik op **⚙ Instellingen** in de bal
 ## Op een Chromebook (voor een niet-techneut)
 Bedoeld om door iemand anders te laten gebruiken: éénmalig opzetten, daarna één klik.
 
-**Eenmalig (door jou):**
+**Eenmalig:**
 1. Zet de Linux-omgeving aan: *Instellingen → Geavanceerd → Ontwikkelaars → Linux-ontwikkelomgeving → Inschakelen*.
-2. Zet deze projectmap in de Linux-omgeving, open de Terminal erin en draai:
+2. Sleep deze projectmap (naam: `eufy-viewer`) in de Bestanden-app naar **Linux-bestanden**.
+3. Open de Terminal en draai:
    ```bash
-   bash setup-chromebook.sh
+   bash eufy-viewer/setup-chromebook.sh
    ```
    Dit installeert ffmpeg + Node, bouwt de app en maakt een app-icoon **Eufy Viewer**.
-3. Zet poort doorsturen aan: *Instellingen → … → Linux → Poort doorsturen* → poort **3000** (TCP).
-   (Zo werkt `http://localhost:3000` én is de app installeerbaar als PWA.)
-4. Optioneel: open `http://localhost:3000` in Chrome → menu (⋮) → **App installeren** → echt
-   app-venster (fullscreen, geen adresbalk).
 
-**Dagelijks (door de gebruiker):** klik op het **Eufy Viewer**-icoon in de app-lade. De
-eerste keer logt hij in z'n Eufy-account in via het scherm in de browser — geen bestanden,
-geen terminal. Daarna onthoudt de app het en herverbindt vanzelf.
+**Dagelijks (door de gebruiker):** klik op het **Eufy Viewer**-icoon in de app-lade. Het
+icoon opent de viewer via `http://penguin.linux.test:3000` — dus **geen poort doorsturen
+nodig**. De eerste keer logt hij in z'n Eufy-account in via het scherm in de browser; daarna
+onthoudt de app het en herverbindt vanzelf.
+
+> Wil je een echt app-venster (PWA, fullscreen zonder adresbalk)? Dat vereist een "secure
+> context": zet poort **3000** doorsturen aan (*Instellingen → … → Linux → Poort doorsturen*),
+> open `http://localhost:3000` in Chrome en kies menu (⋮) → **App installeren**. Optioneel.
+
+Voor een leek-vriendelijk, jargon-vrij stappenplan: zie de meegeleverde PDF-handleiding.
 
 ## Mappen
 ```

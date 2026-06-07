@@ -6,11 +6,14 @@ set -uo pipefail
 
 cd "$(dirname "$0")"
 PORT=3000
-URL="http://localhost:${PORT}"
+# Binnen de Linux-omgeving checken we de server op localhost; de ChromeOS-browser opent
+# 'm via penguin.linux.test (zo is GEEN poort-doorsturen nodig).
+CHECK_URL="http://localhost:${PORT}"
+OPEN_URL="http://penguin.linux.test:${PORT}"
 
 # Draait de server al? Dan alleen de browser openen en klaar.
-if curl -fsS "$URL" >/dev/null 2>&1; then
-  xdg-open "$URL" >/dev/null 2>&1 || true
+if curl -fsS "$CHECK_URL" >/dev/null 2>&1; then
+  xdg-open "$OPEN_URL" >/dev/null 2>&1 || true
   exit 0
 fi
 
@@ -23,11 +26,11 @@ fi
 # Start de server op de achtergrond en wacht tot 'm reageert (max ~60s).
 nohup npm start >"/tmp/eufy-viewer.log" 2>&1 &
 for _ in $(seq 1 120); do
-  if curl -fsS "$URL" >/dev/null 2>&1; then
+  if curl -fsS "$CHECK_URL" >/dev/null 2>&1; then
     break
   fi
   sleep 0.5
 done
 
 # Open in de browser. Crostini stuurt http-URLs door naar Chrome op ChromeOS.
-xdg-open "$URL" >/dev/null 2>&1 || true
+xdg-open "$OPEN_URL" >/dev/null 2>&1 || true

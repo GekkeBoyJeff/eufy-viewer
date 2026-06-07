@@ -62,19 +62,14 @@ echo "✓ App-icoon 'Eufy Viewer' aangemaakt."
 cat <<EOF
 
 ────────────────────────────────────────────────────────
-✓ Klaar!  Nog één instelling in ChromeOS (eenmalig):
+✓ Klaar!
 
-  Instellingen > Geavanceerd > Ontwikkelaars > Linux >
-  "Poort doorsturen"  →  voeg poort ${PORT} (TCP) toe.
-
-  Dit zorgt dat http://localhost:${PORT} werkt vanuit Chrome
-  én dat de app als PWA te installeren is.
-
-Dagelijks gebruik: klik in de app-lade op "Eufy Viewer".
+Klik in je app-lijst op "Eufy Viewer" om te beginnen.
 De eerste keer log je in je Eufy-account in via het scherm
 in de browser — daarna onthoudt de app het.
 
-Wil je een echt app-venster (fullscreen, geen adresbalk)?
-  Open http://localhost:${PORT} in Chrome → menu (⋮) → "App installeren".
+(Optioneel, voor een echt app-venster zonder adresbalk: zet in
+ Instellingen > Linux > "Poort doorsturen" poort ${PORT} aan, open
+ http://localhost:${PORT} in Chrome en kies menu > "App installeren".)
 ────────────────────────────────────────────────────────
 EOF
