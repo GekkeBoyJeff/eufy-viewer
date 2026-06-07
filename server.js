@@ -2,8 +2,8 @@
 // the same port. Run with `npm run dev` (development) or `npm start` (production).
 import { createServer } from 'node:http';
 import next from 'next';
-import { Env } from './src/lib/Env.js';
 import { cameraService } from './src/lib/CameraService.js';
+import { Env } from './src/lib/Env.js';
 import { createVideoSocket } from './src/lib/server/VideoSocket.js';
 
 const dev = Env.isDev;
@@ -19,7 +19,9 @@ const server = createServer((req, res) => handlePage(req, res));
 const video = createVideoSocket(cameraService);
 const handleNextUpgrade = app.getUpgradeHandler();
 server.on('upgrade', (req, socket, head) => {
-  if (video.handleUpgrade(req, socket, head)) return;
+  if (video.handleUpgrade(req, socket, head)) {
+    return;
+  }
   handleNextUpgrade(req, socket, head);
 });
 

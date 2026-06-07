@@ -6,4 +6,7 @@ export const dynamic = 'force-dynamic';
 export const GET = async () => Response.json({ lines: getRecentLogs() });
 
 // "Wissen" empties the server buffer too — otherwise the next poll just refills it.
-export const DELETE = async () => { clearLogs(); return Response.json({ ok: true }); };
+export const DELETE = async () => {
+  clearLogs();
+  return Response.json({ ok: true });
+};

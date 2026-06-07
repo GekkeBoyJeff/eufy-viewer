@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 /* Control-room palette as Tailwind theme tokens → utilities like bg-surface, text-muted. */
 @theme {
@@ -15,25 +15,86 @@
   --animate-spin-fast: spin 1s linear infinite;
   --animate-pulse-led: pulseLed 1.2s infinite;
   --animate-blink-led: blinkLed 1s infinite;
-  --animate-fade: fade .3s ease both;
-  --animate-rise: rise .5s cubic-bezier(.22,.61,.36,1) both;
+  --animate-fade: fade 0.3s ease both;
+  --animate-rise: rise 0.5s cubic-bezier(0.22, 0.61, 0.36, 1) both;
 }
 
-@keyframes pulseLed { 50% { opacity: .35; } }
-@keyframes blinkLed { 50% { opacity: .2; } }
-@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
-@keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes pulseLed {
+  50% {
+    opacity: 0.35;
+  }
+}
+@keyframes blinkLed {
+  50% {
+    opacity: 0.2;
+  }
+}
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
 
-html, body { height: 100%; }
-body { margin: 0; background: var(--color-bg); color: var(--color-ink); color-scheme: dark; font-family: system-ui, -apple-system, sans-serif; }
+html,
+body {
+  height: 100%;
+}
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-ink);
+  color-scheme: dark;
+  font-family:
+    system-ui,
+    -apple-system,
+    sans-serif;
+}
 
 /* A couple of small primitives that are cleaner as one class than as long utility
    strings: the status dot (with its data-state colours) and the loading spinner. */
 @layer components {
-  .led { width: 10px; height: 10px; border-radius: 9999px; background: #3a3f4a; display: inline-block; flex: none; }
-  .led[data-state="live"] { background: var(--color-live); box-shadow: 0 0 8px var(--color-live); }
-  .led[data-state="connecting"], .led[data-state="retrying"], .led[data-state="pending"] { background: var(--color-warn); animation: var(--animate-pulse-led); }
-  .led[data-state="error"] { background: var(--color-err); animation: var(--animate-blink-led); }
+  .led {
+    width: 10px;
+    height: 10px;
+    border-radius: 9999px;
+    background: #3a3f4a;
+    display: inline-block;
+    flex: none;
+  }
+  .led[data-state='live'] {
+    background: var(--color-live);
+    box-shadow: 0 0 8px var(--color-live);
+  }
+  .led[data-state='connecting'],
+  .led[data-state='retrying'],
+  .led[data-state='pending'] {
+    background: var(--color-warn);
+    animation: var(--animate-pulse-led);
+  }
+  .led[data-state='error'] {
+    background: var(--color-err);
+    animation: var(--animate-blink-led);
+  }
 
-  .spinner { width: 34px; height: 34px; border: 3px solid var(--color-line); border-top-color: var(--color-accent); border-radius: 9999px; animation: var(--animate-spin-fast); }
+  .spinner {
+    width: 34px;
+    height: 34px;
+    border: 3px solid var(--color-line);
+    border-top-color: var(--color-accent);
+    border-radius: 9999px;
+    animation: var(--animate-spin-fast);
+  }
 }

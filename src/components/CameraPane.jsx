@@ -1,10 +1,19 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
 import clsx from 'clsx';
+import { useEffect, useRef, useState } from 'react';
 import { LivePlayer } from '@/lib/client/LivePlayer.js';
 
-const LABELS = { idle: 'Inactief', pending: 'Klaarzetten…', connecting: 'Verbinden…', live: 'Live', error: 'Geen beeld', retrying: 'Opnieuw…' };
-const START_BACKOFF = 4000, MAX_BACKOFF = 60000, NO_FRAME_MS = 15000;
+const LABELS = {
+  idle: 'Inactief',
+  pending: 'Klaarzetten…',
+  connecting: 'Verbinden…',
+  live: 'Live',
+  error: 'Geen beeld',
+  retrying: 'Opnieuw…',
+};
+const START_BACKOFF = 4000,
+  MAX_BACKOFF = 60_000,
+  NO_FRAME_MS = 15_000;
 
 // One camera tile: shows the video and always shows its status. It connects on its own
 // and, if the stream fails, retries with a growing wait so a busy camera isn't hammered.
@@ -19,52 +28,111 @@ export const CameraPane = ({ camera, role, hidden, fit, onSelect, onForce, dbg }
     // RTSP URL not ready yet: show "klaarzetten…" and don't open a stream. The server keeps
     // resolving it in the background; once `ready` flips true this effect re-runs and connects.
     if (camera.ready === false) {
-      setStatus('pending'); setDetail('RTSP wordt klaargezet…');
+      setStatus('pending');
+      setDetail('RTSP wordt klaargezet…');
       dbg?.(camera.name, 'wacht op RTSP-url (klaarzetten…)');
-      return undefined;
+      return;
     }
-    const m = { player: new LivePlayer(videoRef.current), timers: {}, backoff: START_BACKOFF, status: 'idle', stopped: false };
+    const m = {
+      player: new LivePlayer(videoRef.current),
+      timers: {},
+      backoff: START_BACKOFF,
+      status: 'idle',
+      stopped: false,
+    };
     machineRef.current = m;
 
-    const set = (s, d) => { m.status = s; setStatus(s); setDetail(d || LABELS[s]); dbg?.(camera.name, `${s}${d ? ' — ' + d : ''}`); };
-    const clear = () => { clearTimeout(m.timers.noFrame); clearTimeout(m.timers.retry); clearInterval(m.timers.count); };
+    const set = (s, d) => {
+      m.status = s;
+      setStatus(s);
+      setDetail(d || LABELS[s]);
+      dbg?.(camera.name, `${s}${d ? ` — ${d}` : ''}`);
+    };
+    const clear = () => {
+      clearTimeout(m.timers.noFrame);
+      clearTimeout(m.timers.retry);
+      clearInterval(m.timers.count);
+    };
 
     const begin = () => {
-      if (m.stopped) return;
+      if (m.stopped) {
+        return;
+      }
       clear();
-      if (camera.battery) { set('idle', 'Klik om te starten (accu)'); return; }
+      if (camera.battery) {
+        set('idle', 'Klik om te starten (accu)');
+        return;
+      }
       set('connecting');
       m.player.start(camera.id, {
-        onLive: () => { clearTimeout(m.timers.noFrame); m.backoff = START_BACKOFF; set('live'); },
+        onLive: () => {
+          clearTimeout(m.timers.noFrame);
+          m.backoff = START_BACKOFF;
+          set('live');
+        },
         onError: (e) => fail(e?.message || 'fout'),
         // Any close BEFORE we ever went live means the connect attempt failed — retry instead
         // of silently waiting on the no-frame timer. Code 4002 = camera's RTSP not ready yet.
-        onClose: (info) => fail(m.status === 'live' ? 'verbinding verbroken' : (info?.code === 4002 ? 'camera nog niet klaar — opnieuw' : 'kon niet verbinden — opnieuw')),
+        onClose: (info) =>
+          fail(
+            m.status === 'live'
+              ? 'verbinding verbroken'
+              : info?.code === 4002
+                ? 'camera nog niet klaar — opnieuw'
+                : 'kon niet verbinden — opnieuw',
+          ),
         onAutostopped: () => fail('stream gestopt'),
         onDebug: (msg) => dbg?.(camera.name, msg),
       });
-      m.timers.noFrame = setTimeout(() => fail('geen beeld — camera bezet (Eufy-app?) of geen opslag'), NO_FRAME_MS);
+      m.timers.noFrame = setTimeout(
+        () => fail('geen beeld — camera bezet (Eufy-app?) of geen opslag'),
+        NO_FRAME_MS,
+      );
     };
 
     const fail = (reason) => {
       clear();
-      try { m.player.stop(); } catch {}
+      try {
+        m.player.stop();
+      } catch {}
       let left = Math.round(m.backoff / 1000);
       set('retrying', `opnieuw in ${left}s`);
-      m.timers.count = setInterval(() => { left -= 1; if (left > 0) set('retrying', `opnieuw in ${left}s`); }, 1000);
-      m.timers.retry = setTimeout(() => { m.backoff = Math.min(m.backoff * 2, MAX_BACKOFF); begin(); }, m.backoff);
+      m.timers.count = setInterval(() => {
+        left -= 1;
+        if (left > 0) {
+          set('retrying', `opnieuw in ${left}s`);
+        }
+      }, 1000);
+      m.timers.retry = setTimeout(() => {
+        m.backoff = Math.min(m.backoff * 2, MAX_BACKOFF);
+        begin();
+      }, m.backoff);
     };
 
-    m.retryNow = () => { clear(); try { m.player.stop(); } catch {} m.backoff = START_BACKOFF; begin(); };
+    m.retryNow = () => {
+      clear();
+      try {
+        m.player.stop();
+      } catch {}
+      m.backoff = START_BACKOFF;
+      begin();
+    };
     begin();
-    return () => { m.stopped = true; clear(); try { m.player.stop(); } catch {} };
+    return () => {
+      m.stopped = true;
+      clear();
+      try {
+        m.player.stop();
+      } catch {}
+    };
   }, [camera.id, camera.type, camera.ready]); // herstart bij andere camera, ander pad, of zodra RTSP klaar is
 
-  const place = role === 'main'
-    ? 'absolute inset-0'
-    : role === 'pip'
-      ? 'absolute right-4 bottom-4 w-[min(34%,380px)] aspect-video border border-[#2b3340] rounded-xl shadow-[0_10px_34px_rgba(0,0,0,.6)] z-10'
-      : 'relative flex-1 min-w-0 min-h-0';
+  const place =
+    role === 'main'
+      ? 'absolute inset-0'
+      : role === 'pip'
+        ? 'absolute right-4 bottom-4 w-[min(34%,380px)] aspect-video border border-[#2b3340] rounded-xl shadow-[0_10px_34px_rgba(0,0,0,.6)] z-10'
+        : 'relative flex-1 min-w-0 min-h-0';
 
   // Clicking a tile focuses that camera — but the big (main) view does nothing on click,
   // so only the clickable tiles get the pointer cursor.
@@ -73,33 +141,61 @@ export const CameraPane = ({ camera, role, hidden, fit, onSelect, onForce, dbg }
     <div
       onClick={clickable ? () => onSelect?.(camera) : undefined}
       data-state={status}
-      className={clsx('bg-black overflow-hidden animate-fade', clickable ? 'cursor-pointer' : 'cursor-default', place, hidden && 'hidden')}
+      className={clsx(
+        'bg-black overflow-hidden animate-fade',
+        clickable ? 'cursor-pointer' : 'cursor-default',
+        place,
+        hidden && 'hidden',
+      )}
     >
-      <video ref={videoRef} autoPlay muted playsInline className={clsx('w-full h-full bg-black block', fit === 'cover' ? 'object-cover' : 'object-contain')} />
+      <video
+        ref={videoRef}
+        autoPlay
+        muted
+        playsInline
+        className={clsx(
+          'w-full h-full bg-black block',
+          fit === 'cover' ? 'object-cover' : 'object-contain',
+        )}
+      />
 
-      <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 pointer-events-none">
-        {status === 'connecting' && (<><div className="spinner" /><div className="text-muted text-sm">Verbinden…</div></>)}
+      <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-3">
+        {status === 'connecting' && (
+          <>
+            <div className="spinner" />
+            <div className="text-sm text-muted">Verbinden…</div>
+          </>
+        )}
         {status === 'pending' && (
           <>
             <div className="spinner" />
-            <div className="text-warn text-sm bg-black/55 px-3 py-1 rounded-lg">{detail}</div>
+            <div className="rounded-lg bg-black/55 px-3 py-1 text-sm text-warn">{detail}</div>
             {onForce && (
               <button
-                className="pointer-events-auto bg-warn text-[#2a1a00] font-bold text-sm px-3.5 py-1.5 rounded-lg hover:brightness-110 active:scale-95 transition"
-                onClick={(e) => { e.stopPropagation(); dbg?.(camera.name, 'handmatig opnieuw klaarzetten'); onForce(camera.id); }}
+                className="pointer-events-auto rounded-lg bg-warn px-3.5 py-1.5 text-sm font-bold text-[#2a1a00] transition hover:brightness-110 active:scale-95"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  dbg?.(camera.name, 'handmatig opnieuw klaarzetten');
+                  onForce(camera.id);
+                }}
               >
                 Nu opnieuw proberen
               </button>
             )}
           </>
         )}
-        {status === 'idle' && <div className="text-muted text-sm">{detail}</div>}
+        {status === 'idle' && <div className="text-sm text-muted">{detail}</div>}
         {(status === 'error' || status === 'retrying') && (
           <>
-            <div className="text-[#cdd2db] text-sm bg-black/65 px-3.5 py-1.5 rounded-lg max-w-[82%] text-center leading-snug">{detail}</div>
+            <div className="max-w-[82%] rounded-lg bg-black/65 px-3.5 py-1.5 text-center text-sm leading-snug text-[#cdd2db]">
+              {detail}
+            </div>
             <button
-              className="pointer-events-auto bg-accent text-[#04222a] font-bold text-sm px-3.5 py-1.5 rounded-lg hover:brightness-110 active:scale-95 transition"
-              onClick={(e) => { e.stopPropagation(); machineRef.current?.retryNow(); }}
+              className="pointer-events-auto rounded-lg bg-accent px-3.5 py-1.5 text-sm font-bold text-[#04222a] transition hover:brightness-110 active:scale-95"
+              onClick={(e) => {
+                e.stopPropagation();
+                machineRef.current?.retryNow();
+              }}
             >
               Nu opnieuw
             </button>
@@ -107,9 +203,9 @@ export const CameraPane = ({ camera, role, hidden, fit, onSelect, onForce, dbg }
         )}
       </div>
 
-      <div className="absolute left-2.5 bottom-2.5 flex items-center gap-2 max-w-[calc(100%-1.25rem)] bg-black/60 backdrop-blur border border-white/10 px-2.5 py-1 rounded-full text-[.78rem] z-2">
+      <div className="absolute bottom-2.5 left-2.5 z-2 flex max-w-[calc(100%-1.25rem)] items-center gap-2 rounded-full border border-white/10 bg-black/60 px-2.5 py-1 text-[.78rem] backdrop-blur">
         <span className="led" data-state={status} />
-        <span className="font-semibold truncate">{camera.name}</span>
+        <span className="truncate font-semibold">{camera.name}</span>
       </div>
     </div>
   );

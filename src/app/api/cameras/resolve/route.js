@@ -9,7 +9,12 @@ export const dynamic = 'force-dynamic';
 export const POST = async (req) => {
   const { id } = await req.json().catch(() => ({}));
   const cam = id && cameraService.getCamera(id);
-  if (!cam) return Response.json({ ok: false, error: 'onbekende camera' }, { status: 404 });
-  eufyClient.forceResolveRtsp(cam.serial).then(() => cameraService.refresh()).catch(() => {});
+  if (!cam) {
+    return Response.json({ ok: false, error: 'onbekende camera' }, { status: 404 });
+  }
+  eufyClient
+    .forceResolveRtsp(cam.serial)
+    .then(() => cameraService.refresh())
+    .catch(() => {});
   return Response.json({ ok: true });
 };
