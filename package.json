@@ -11,7 +11,7 @@
     "lint:fix": "oxlint -c oxlint.config.mjs --fix src server.js",
     "format": "oxfmt -c oxfmt.config.mjs --write src server.js",
     "format:check": "oxfmt -c oxfmt.config.mjs --check src server.js",
-    "prepare": "lefthook install",
+    "prepare": "git rev-parse --is-inside-work-tree > /dev/null 2>&1 && lefthook install || true",
     "test": "node --test"
   },
   "dependencies": {
