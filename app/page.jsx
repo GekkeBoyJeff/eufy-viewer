@@ -8,7 +8,7 @@ import CameraPane from '@/components/CameraPane.jsx';
 import AccountLogin from '@/components/AccountLogin.jsx';
 import SettingsModal from '@/components/SettingsModal.jsx';
 
-const DEFAULTS = { mode: 'split-h', mainId: null, pipOn: true };
+const DEFAULTS = { mode: 'split-h', mainId: null, pipOn: true, fit: 'contain' };
 const fetchJson = (url) => fetch(url).then((r) => r.json());
 
 const Centered = ({ children }) => (
@@ -59,6 +59,7 @@ const ViewerPage = () => {
   const setMode = (mode) => setCfg({ ...cfg, mode });
   const swap = () => { const other = cameras.find((c) => c.id !== cfg.mainId); if (other) setCfg({ ...cfg, mode: 'focus', mainId: other.id }); };
   const togglePip = () => setCfg({ ...cfg, pipOn: !cfg.pipOn });
+  const toggleFit = () => setCfg({ ...cfg, fit: cfg.fit === 'cover' ? 'contain' : 'cover' });
   const selectCamera = (cam) => setCfg(cfg.mode === 'focus' ? { ...cfg, mainId: cam.id } : { ...cfg, mode: 'focus', mainId: cam.id });
   const fullscreen = () => { if (document.fullscreenElement) document.exitFullscreen?.(); else document.documentElement.requestFullscreen?.(); };
   const mainName = cameras.find((c) => c.id === cfg.mainId)?.name;
@@ -77,6 +78,7 @@ const ViewerPage = () => {
     <div className="h-[100dvh] flex flex-col overflow-hidden">
       <Toolbar
         mode={cfg.mode} onMode={setMode} onSwap={swap} onTogglePip={togglePip} pipOn={cfg.pipOn} mainName={mainName}
+        fit={cfg.fit} onToggleFit={toggleFit}
         onFullscreen={fullscreen} onOpenSettings={() => setSettingsOpen(true)} onToggleDebug={() => toggleDebug()}
       />
 
@@ -87,7 +89,7 @@ const ViewerPage = () => {
           {cameras.map((cam) => {
             const role = cfg.mode === 'focus' ? (cam.id === cfg.mainId ? 'main' : 'pip') : 'split';
             const hidden = cfg.mode === 'focus' && role === 'pip' && !cfg.pipOn;
-            return <CameraPane key={`${cam.id}:${cam.type}`} camera={cam} role={role} hidden={hidden} onSelect={selectCamera} dbg={dbg} />;
+            return <CameraPane key={`${cam.id}:${cam.type}`} camera={cam} role={role} hidden={hidden} fit={cfg.fit} onSelect={selectCamera} dbg={dbg} />;
           })}
         </div>
       )}

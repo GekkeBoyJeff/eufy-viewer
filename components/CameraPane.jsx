@@ -9,7 +9,7 @@ const START_BACKOFF = 4000, MAX_BACKOFF = 60000, NO_FRAME_MS = 15000;
 // One camera tile: shows the video and always shows its status. It connects on its own
 // and, if the stream fails, retries with a growing wait so a busy camera isn't hammered.
 // `role` ('split' | 'main' | 'pip') only changes how the tile is placed.
-const CameraPane = ({ camera, role, hidden, onSelect, dbg }) => {
+const CameraPane = ({ camera, role, hidden, fit, onSelect, dbg }) => {
   const videoRef = useRef(null);
   const machineRef = useRef(null);
   const [status, setStatus] = useState('idle');
@@ -54,7 +54,7 @@ const CameraPane = ({ camera, role, hidden, onSelect, dbg }) => {
   const place = role === 'main'
     ? 'absolute inset-0'
     : role === 'pip'
-      ? 'absolute right-4 bottom-4 w-[min(34%,380px)] aspect-video border border-[#2b3340] rounded-xl shadow-[0_10px_34px_rgba(0,0,0,.6)] z-[6]'
+      ? 'absolute right-4 bottom-4 w-[min(34%,380px)] aspect-video border border-[#2b3340] rounded-xl shadow-[0_10px_34px_rgba(0,0,0,.6)] z-10'
       : 'relative flex-1 min-w-0 min-h-0';
 
   return (
@@ -63,7 +63,7 @@ const CameraPane = ({ camera, role, hidden, onSelect, dbg }) => {
       data-state={status}
       className={clsx('bg-black overflow-hidden cursor-pointer animate-fade', place, hidden && 'hidden')}
     >
-      <video ref={videoRef} autoPlay muted playsInline className="w-full h-full object-contain bg-black block" />
+      <video ref={videoRef} autoPlay muted playsInline className={clsx('w-full h-full bg-black block', fit === 'cover' ? 'object-cover' : 'object-contain')} />
 
       <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 pointer-events-none">
         {status === 'connecting' && (<><div className="spinner" /><div className="text-muted text-sm">Verbinden…</div></>)}
@@ -81,9 +81,9 @@ const CameraPane = ({ camera, role, hidden, onSelect, dbg }) => {
         )}
       </div>
 
-      <div className="absolute left-2.5 bottom-2.5 flex items-center gap-2 bg-black/60 backdrop-blur border border-white/10 px-2.5 py-1 rounded-full text-[.78rem] z-[3]">
+      <div className="absolute left-2.5 bottom-2.5 flex items-center gap-2 max-w-[calc(100%-1.25rem)] bg-black/60 backdrop-blur border border-white/10 px-2.5 py-1 rounded-full text-[.78rem] z-2">
         <span className="led" data-state={status} />
-        <span className="font-semibold">{camera.name}</span>
+        <span className="font-semibold truncate">{camera.name}</span>
       </div>
     </div>
   );
