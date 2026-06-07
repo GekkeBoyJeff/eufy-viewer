@@ -3,13 +3,15 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "engines": {
-    "node": ">=20.9"
-  },
   "scripts": {
     "dev": "node server.js",
     "build": "rm -rf .next && next build",
     "start": "NODE_ENV=production node server.js",
+    "lint": "oxlint -c oxlint.config.mjs src server.js",
+    "lint:fix": "oxlint -c oxlint.config.mjs --fix src server.js",
+    "format": "oxfmt -c oxfmt.config.mjs --write src server.js",
+    "format:check": "oxfmt -c oxfmt.config.mjs --check src server.js",
+    "prepare": "lefthook install",
     "test": "node --test"
   },
   "dependencies": {
@@ -25,8 +27,17 @@
     "zod": "^4.0.0"
   },
   "devDependencies": {
+    "@commitlint/cli": "^20.5.3",
+    "@commitlint/config-conventional": "^20.5.3",
     "@tailwindcss/postcss": "^4.3.0",
+    "lefthook": "^2.1.9",
+    "oxfmt": "^0.53.0",
+    "oxlint": "^1.68.0",
     "postcss": "^8.5.15",
-    "tailwindcss": "^4.3.0"
+    "tailwindcss": "^4.3.0",
+    "ultracite": "^7.8.1"
+  },
+  "engines": {
+    "node": ">=20.9"
   }
 }

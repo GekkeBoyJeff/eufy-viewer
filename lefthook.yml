@@ -1,0 +1,24 @@
+# Git hooks (Lefthook). Installed automatically via the package.json "prepare" script;
+# run `npx lefthook install` manually if needed.
+#
+# NOTE: we invoke oxfmt/oxlint directly (with the .mjs configs) rather than via the
+# `ultracite` CLI, because ultracite only auto-detects oxlint.config.ts / .oxlintrc.json
+# and this is a JSX project on Node 20 where .mjs configs load natively.
+
+commit-msg:
+  jobs:
+    - name: commitlint
+      run: npx --no -- commitlint --edit {1}
+
+pre-commit:
+  jobs:
+    # 1) Format staged files, then 2) lint-fix them. Sequential so they don't fight over
+    #    the same files. Only errors block the commit; the warn-level backlog does not.
+    - name: oxfmt
+      glob: ['*.js', '*.jsx', '*.mjs', '*.json', '*.jsonc', '*.css']
+      run: npx oxfmt -c oxfmt.config.mjs --write {staged_files}
+      stage_fixed: true
+    - name: oxlint
+      glob: ['*.js', '*.jsx', '*.mjs']
+      run: npx oxlint -c oxlint.config.mjs --fix {staged_files}
+      stage_fixed: true

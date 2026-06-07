@@ -1,0 +1,17 @@
+{
+  "editor.tabSize": 2,
+  "editor.detectIndentation": false,
+
+  // Oxc (oxlint + oxfmt) is the formatter and linter. NO type-aware linting: this is JSX.
+  "editor.defaultFormatter": "oxc.oxc-vscode",
+  "editor.formatOnSave": true,
+  "editor.formatOnSaveMode": "file",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.oxc": "explicit"
+  },
+
+  "search.exclude": {
+    "package-lock.json": true,
+    ".next": true
+  }
+}
