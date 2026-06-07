@@ -9,7 +9,9 @@ import AccountLogin from '@/components/AccountLogin.jsx';
 import SettingsModal from '@/components/SettingsModal.jsx';
 
 const DEFAULTS = { mode: 'split-h', mainId: null, pipOn: true, fit: 'contain' };
-const fetchJson = (url) => fetch(url).then((r) => r.json());
+// Treat a non-OK response as a real (retryable) error instead of feeding a bad body into
+// state — otherwise one hiccup can leave the list frozen on its last snapshot.
+const fetchJson = async (url) => { const r = await fetch(url); if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); };
 
 const Centered = ({ children }) => (
   <div className="min-h-[100dvh] flex items-center justify-center p-6 animate-rise">{children}</div>
@@ -21,11 +23,18 @@ const Loading = ({ text }) => (
 // The viewer: first run shows a login screen; once your account is connected it shows
 // all cameras with a layout switch (horizontal / vertical / focus+PiP), remembered.
 const ViewerPage = () => {
-  // Keep polling so a camera that resolves a bit later still shows up (2.5s while we
-  // have none, a calm 8s once cameras are present — never fully stops).
+  // Keep polling so a camera that resolves a bit later shows up on its own. Poll fast (3s)
+  // while any camera is still "klaarzetten" so the ready-moment reaches the tile quickly,
+  // calm 8s once all are ready, 2.5s while we have none. Revalidate on focus (what a manual
+  // refresh does on tab-return) and retry a cached error quickly so the list never stays stale.
   const { data, mutate } = useSWR('/api/cameras', fetchJson, {
-    refreshInterval: (latest) => (latest?.cameras?.length ? 8000 : 2500),
-    revalidateOnFocus: false,
+    refreshInterval: (latest) => {
+      const cams = latest?.cameras;
+      if (!cams?.length) return 2500;
+      return cams.some((c) => c.ready === false) ? 3000 : 8000;
+    },
+    revalidateOnFocus: true,
+    errorRetryInterval: 3000,
     keepPreviousData: true,
   });
   const eufy = data?.eufy ?? { configured: false, connected: false };
@@ -56,10 +65,15 @@ const ViewerPage = () => {
   useEffect(() => { if (logRef.current) logRef.current.scrollTop = logRef.current.scrollHeight; }, [serverLines, logLines]);
 
   const dbg = (scope, msg) => setLogLines((prev) => [...prev.slice(-199), `${new Date().toLocaleTimeString('nl-NL')}  ${scope}  ${msg}`]);
+  // Clear both sides: the client lines and the server buffer (so the next poll stays empty).
+  const clearLog = () => { setLogLines([]); setServerLines([]); fetch('/api/log', { method: 'DELETE' }).catch(() => {}); };
   const setMode = (mode) => setCfg({ ...cfg, mode });
   const swap = () => { const other = cameras.find((c) => c.id !== cfg.mainId); if (other) setCfg({ ...cfg, mode: 'focus', mainId: other.id }); };
   const togglePip = () => setCfg({ ...cfg, pipOn: !cfg.pipOn });
   const toggleFit = () => setCfg({ ...cfg, fit: cfg.fit === 'cover' ? 'contain' : 'cover' });
+  // "Nu opnieuw proberen" on a stuck tile: ask the server to drop its state and resolve the
+  // RTSP URL fresh, then refresh the list — no full page reload needed.
+  const forceRetry = (id) => { fetch('/api/cameras/resolve', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ id }) }).catch(() => {}); mutate(); };
   const selectCamera = (cam) => setCfg(cfg.mode === 'focus' ? { ...cfg, mainId: cam.id } : { ...cfg, mode: 'focus', mainId: cam.id });
   const fullscreen = () => { if (document.fullscreenElement) document.exitFullscreen?.(); else document.documentElement.requestFullscreen?.(); };
   const mainName = cameras.find((c) => c.id === cfg.mainId)?.name;
@@ -89,7 +103,9 @@ const ViewerPage = () => {
           {cameras.map((cam) => {
             const role = cfg.mode === 'focus' ? (cam.id === cfg.mainId ? 'main' : 'pip') : 'split';
             const hidden = cfg.mode === 'focus' && role === 'pip' && !cfg.pipOn;
-            return <CameraPane key={`${cam.id}:${cam.type}`} camera={cam} role={role} hidden={hidden} fit={cfg.fit} onSelect={selectCamera} dbg={dbg} />;
+            // Key on ready too: when a camera flips pending->ready the tile remounts fresh
+            // (new player, clean state) — the same clean start a manual page refresh gave.
+            return <CameraPane key={`${cam.id}:${cam.type}:${cam.ready ? 'r' : 'p'}`} camera={cam} role={role} hidden={hidden} fit={cfg.fit} onSelect={selectCamera} onForce={forceRetry} dbg={dbg} />;
           })}
         </div>
       )}
@@ -99,7 +115,7 @@ const ViewerPage = () => {
       {debugOn && (
         <div className="absolute left-0 right-0 bottom-0 h-[38vh] bg-black/95 border-t border-line z-40 flex flex-col">
           <div className="flex justify-between items-center px-3 py-1.5 border-b border-line text-sm text-muted">
-            Debug-log <button className="px-2 py-0.5 text-xs rounded-md bg-[#0e1014] border border-line hover:text-ink" onClick={() => setLogLines([])}>wissen</button>
+            Debug-log <button className="px-2 py-0.5 text-xs rounded-md bg-[#0e1014] border border-line hover:text-ink" onClick={clearLog}>wissen</button>
           </div>
           <div className="flex-1 overflow-auto px-3 py-1.5 font-mono text-[.7rem] leading-relaxed text-[#aeb4be] whitespace-pre-wrap" ref={logRef}>
             {allLogLines.map((l, i) => <div key={i}>{l}</div>)}

@@ -9,7 +9,7 @@ const START_BACKOFF = 4000, MAX_BACKOFF = 60000, NO_FRAME_MS = 15000;
 // One camera tile: shows the video and always shows its status. It connects on its own
 // and, if the stream fails, retries with a growing wait so a busy camera isn't hammered.
 // `role` ('split' | 'main' | 'pip') only changes how the tile is placed.
-const CameraPane = ({ camera, role, hidden, fit, onSelect, dbg }) => {
+const CameraPane = ({ camera, role, hidden, fit, onSelect, onForce, dbg }) => {
   const videoRef = useRef(null);
   const machineRef = useRef(null);
   const [status, setStatus] = useState('idle');
@@ -37,7 +37,9 @@ const CameraPane = ({ camera, role, hidden, fit, onSelect, dbg }) => {
       m.player.start(camera.id, {
         onLive: () => { clearTimeout(m.timers.noFrame); m.backoff = START_BACKOFF; set('live'); },
         onError: (e) => fail(e?.message || 'fout'),
-        onClose: () => { if (m.status === 'live') fail('verbinding verbroken'); },
+        // Any close BEFORE we ever went live means the connect attempt failed — retry instead
+        // of silently waiting on the no-frame timer. Code 4002 = camera's RTSP not ready yet.
+        onClose: (info) => fail(m.status === 'live' ? 'verbinding verbroken' : (info?.code === 4002 ? 'camera nog niet klaar — opnieuw' : 'kon niet verbinden — opnieuw')),
         onAutostopped: () => fail('stream gestopt'),
         onDebug: (msg) => dbg?.(camera.name, msg),
       });
@@ -77,7 +79,20 @@ const CameraPane = ({ camera, role, hidden, fit, onSelect, dbg }) => {
 
       <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 pointer-events-none">
         {status === 'connecting' && (<><div className="spinner" /><div className="text-muted text-sm">Verbinden…</div></>)}
-        {status === 'pending' && (<><div className="spinner" /><div className="text-muted text-sm">{detail}</div></>)}
+        {status === 'pending' && (
+          <>
+            <div className="spinner" />
+            <div className="text-warn text-sm bg-black/55 px-3 py-1 rounded-lg">{detail}</div>
+            {onForce && (
+              <button
+                className="pointer-events-auto bg-warn text-[#2a1a00] font-bold text-sm px-3.5 py-1.5 rounded-lg hover:brightness-110 active:scale-95 transition"
+                onClick={(e) => { e.stopPropagation(); dbg?.(camera.name, 'handmatig opnieuw klaarzetten'); onForce(camera.id); }}
+              >
+                Nu opnieuw proberen
+              </button>
+            )}
+          </>
+        )}
         {status === 'idle' && <div className="text-muted text-sm">{detail}</div>}
         {(status === 'error' || status === 'retrying') && (
           <>

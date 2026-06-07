@@ -34,7 +34,9 @@ export class LivePlayer {
       try { this.jmuxer.feed({ video: new Uint8Array(ev.data) }); } catch { /* decoder-hik */ }
     };
     ws.onerror = () => onError?.(new Error('verbinding mislukt'));
-    ws.onclose = (e) => { onDebug?.(`ws dicht (code ${e.code})`); if (!this.stopped) onClose?.(); };
+    // Pass the close code so the pane can tell a "not ready yet" close (4002) apart from
+    // a normal drop and word its retry accordingly.
+    ws.onclose = (e) => { onDebug?.(`ws dicht (code ${e.code})`); if (!this.stopped) onClose?.({ code: e.code }); };
 
     this.watch = setInterval(() => {
       if (!first && Date.now() - lastData > 10000) {
