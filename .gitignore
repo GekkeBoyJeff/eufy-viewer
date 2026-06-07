@@ -1,6 +1,19 @@
 node_modules/
 .next/
+out/
+coverage/
+
+# Env: never commit real secrets, but DO commit the template
 .env*
+!.env.example
+
+# Runtime state written by the app / Eufy SDK
 cameras.json
 data/
+
+# Logs
 *.log
+
+# macOS / iCloud duplicate artifacts (e.g. "foo 2.js", "persistent 3.json")
+* [0-9].*
+.DS_Store
