@@ -25,12 +25,3 @@ export const p2pStreamArgs = ({ transcode = false } = {}) => [
   ...videoOut(transcode),
   'pipe:1',
 ];
-
-export const snapshotArgs = (url) => [
-  '-hide_banner', '-loglevel', 'error',
-  '-rtsp_transport', 'tcp',
-  '-i', url,
-  '-frames:v', '1',
-  '-f', 'mjpeg',
-  'pipe:1',
-];

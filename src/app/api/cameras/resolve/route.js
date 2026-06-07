@@ -1,5 +1,5 @@
-import { cameraService } from '@/lib/cameraService.js';
-import { eufyClient } from '@/lib/eufy.js';
+import { cameraService } from '@/lib/CameraService.js';
+import { eufyClient } from '@/lib/Eufy.js';
 
 export const dynamic = 'force-dynamic';
 

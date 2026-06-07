@@ -2,12 +2,12 @@
 // Eufy account finds, auto-set to RTSP where possible), makes the right video source
 // per camera, and manages who is watching. Shared by the server and the API routes
 // (cached on globalThis so it survives Next's hot-reload in development).
-import { StreamManager } from './streamManager.js';
-import { RtspSource } from './sources/rtspSource.js';
-import { P2pSource } from './sources/p2pSource.js';
-import { eufyClient } from './eufy.js';
-import { eufyConfigured } from './account.js';
-import { log } from './log.js';
+import { StreamManager } from './StreamManager.js';
+import { RtspSource } from './sources/RtspSource.js';
+import { P2pSource } from './sources/P2pSource.js';
+import { eufyClient } from './Eufy.js';
+import { eufyConfigured } from './Account.js';
+import { log } from './Log.js';
 
 class CameraService {
   constructor() {

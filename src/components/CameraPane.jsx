@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import clsx from 'clsx';
-import { LivePlayer } from './livePlayer.js';
+import { LivePlayer } from '@/lib/client/LivePlayer.js';
 
 const LABELS = { idle: 'Inactief', pending: 'Klaarzetten…', connecting: 'Verbinden…', live: 'Live', error: 'Geen beeld', retrying: 'Opnieuw…' };
 const START_BACKOFF = 4000, MAX_BACKOFF = 60000, NO_FRAME_MS = 15000;
@@ -9,7 +9,7 @@ const START_BACKOFF = 4000, MAX_BACKOFF = 60000, NO_FRAME_MS = 15000;
 // One camera tile: shows the video and always shows its status. It connects on its own
 // and, if the stream fails, retries with a growing wait so a busy camera isn't hammered.
 // `role` ('split' | 'main' | 'pip') only changes how the tile is placed.
-const CameraPane = ({ camera, role, hidden, fit, onSelect, onForce, dbg }) => {
+export const CameraPane = ({ camera, role, hidden, fit, onSelect, onForce, dbg }) => {
   const videoRef = useRef(null);
   const machineRef = useRef(null);
   const [status, setStatus] = useState('idle');
@@ -114,5 +114,3 @@ const CameraPane = ({ camera, role, hidden, fit, onSelect, onForce, dbg }) => {
     </div>
   );
 };
-
-export default CameraPane;

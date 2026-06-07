@@ -1,7 +1,7 @@
 import { EventEmitter } from 'node:events';
 import { spawn } from 'node:child_process';
-import { p2pStreamArgs } from '../ffmpegArgs.js';
-import { log, logErr } from '../log.js';
+import { p2pStreamArgs } from '../FfmpegArgs.js';
+import { log, logErr } from '../Log.js';
 
 // SoloCam adapter: asks eufyClient to start the on-demand P2P livestream, pipes the
 // raw H.264 Readable into ffmpeg, and emits the resulting H.264 chunks. A watchdog
@@ -69,6 +69,4 @@ export class P2pSource extends EventEmitter {
     try { await this._client.stopLivestream(this.camera.serial); } catch {}
     if (this._proc) { const p = this._proc; this._proc = null; p.kill('SIGKILL'); }
   }
-
-  async snapshot() { return null; }
 }

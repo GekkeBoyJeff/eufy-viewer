@@ -1,4 +1,4 @@
-import { cameraService } from '@/lib/cameraService.js';
+import { cameraService } from '@/lib/CameraService.js';
 
 // Altijd verse data; deze lijst verandert terwijl camera's verbinden.
 export const dynamic = 'force-dynamic';

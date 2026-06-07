@@ -1,4 +1,4 @@
-import { getRecentLogs, clearLogs } from '@/lib/log.js';
+import { getRecentLogs, clearLogs } from '@/lib/Log.js';
 
 export const dynamic = 'force-dynamic';
 

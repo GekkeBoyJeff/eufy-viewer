@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { postSetup } from './api.js';
+import { postSetup } from '@/lib/client/Api.js';
 
 const field = 'bg-[#0e1014] border border-line text-ink rounded-lg px-3 py-2.5 text-[.9rem] outline-none focus:border-accent transition-colors';
 const primary = 'w-full bg-accent text-[#04222a] font-bold rounded-lg px-4 py-2.5 hover:brightness-110 active:scale-[.99] transition disabled:opacity-60';
@@ -8,7 +8,7 @@ const primary = 'w-full bg-accent text-[#04222a] font-bold rounded-lg px-4 py-2.
 // Login card for your Eufy account. If an account is already saved, it reconnects
 // automatically (and walks through captcha/2FA if Eufy asks). Otherwise it shows the
 // form. Used as the first-time screen and inside settings.
-const AccountLogin = ({ configured, onConnected }) => {
+export const AccountLogin = ({ configured, onConnected }) => {
   const [account, setAccount] = useState({ username: '', password: '', country: 'NL' });
   const [view, setView] = useState(configured ? 'saved' : 'account');
   const [captcha, setCaptcha] = useState(null);
@@ -81,5 +81,3 @@ const AccountLogin = ({ configured, onConnected }) => {
     </div>
   );
 };
-
-export default AccountLogin;

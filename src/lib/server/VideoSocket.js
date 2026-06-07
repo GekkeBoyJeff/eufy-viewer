@@ -1,5 +1,5 @@
 import { WebSocketServer } from 'ws';
-import { log } from './log.js';
+import { log } from '../Log.js';
 
 // The live-video WebSocket. The browser connects to /stream/<cameraId>; each
 // connection is one viewer. Video chunks for a camera go to that camera's sockets;

@@ -1,9 +1,9 @@
 // The account/login actions the settings screen needs: log in to Eufy (with captcha
 // or 2FA), read the current state, and test a camera's stream. Cameras themselves come
 // from the account automatically, so there's nothing to add by hand here.
-import { eufyClient } from './eufy.js';
-import { cameraService } from './cameraService.js';
-import { saveAccount, loadEufyConfig } from './account.js';
+import { eufyClient } from './Eufy.js';
+import { cameraService } from './CameraService.js';
+import { saveAccount, loadEufyConfig } from './Account.js';
 
 // Login is interactive, so we bridge its captcha/2FA prompts to plain request/response
 // steps with a small "what happens next" promise.

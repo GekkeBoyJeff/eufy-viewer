@@ -1,4 +1,4 @@
-import * as setup from '@/lib/setupActions.js';
+import * as setup from '@/lib/SetupActions.js';
 
 export const dynamic = 'force-dynamic';
 

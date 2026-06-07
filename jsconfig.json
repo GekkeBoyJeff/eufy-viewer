@@ -1,1 +1,12 @@
-{ "compilerOptions": { "baseUrl": ".", "paths": { "@/*": ["./*"] } } }
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "jsx": "preserve",
+    "checkJs": false,
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": ["src", "server.js"],
+  "exclude": ["node_modules", ".next"]
+}

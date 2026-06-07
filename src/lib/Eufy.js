@@ -1,17 +1,17 @@
 import { EventEmitter } from 'node:events';
 import fs from 'node:fs';
 import { EufySecurity, PropertyName } from 'eufy-security-client';
-import { eufyConfigFromParts, eufyConfigured } from './account.js';
-import { log, logErr, maskUrl } from './log.js';
+import { eufyConfigFromParts, eufyConfigured } from './Account.js';
+import { log, logErr, maskUrl } from './Log.js';
 
 // Run a promise but never wait longer than `ms` — used so a fire-and-forget SDK call can't
 // hang one resolve attempt forever (which would block all later retries for that camera).
 const withTimeout = (p, ms) => Promise.race([Promise.resolve(p).catch(() => {}), new Promise((r) => setTimeout(r, ms))]);
 
 // Singleton wrapper around eufy-security-client. Handles login (with optional
-// interactive captcha/2FA handlers, used by both `npm run setup` and the browser
-// wizard), persists auth to persistentDir, discovers cameras, and re-emits
-// per-serial livestream Readables so P2pSource stays decoupled from the SDK.
+// interactive captcha/2FA handlers, driven by the browser login wizard),
+// persists auth to persistentDir, discovers cameras, and re-emits per-serial
+// livestream Readables so P2pSource stays decoupled from the SDK.
 //
 // AUTO-RTSP: for discovered cameras that support RTSP (Indoor Cams), we enable RTSP
 // in the background and cache the camera-reported rtsp:// URL. Such cameras are then
@@ -69,14 +69,14 @@ class EufyClient extends EventEmitter {
 
         eufy.on('captcha request', async (id, captcha) => {
           log('eufy', 'Eufy vraagt om een captcha');
-          if (!captchaHandler) return reject(new Error('captcha vereist — gebruik de setup-wizard of `npm run setup`'));
+          if (!captchaHandler) return reject(new Error('captcha vereist — log in via de browser (het inlogscherm)'));
           try {
             const code = await captchaHandler(captcha, id);
             await eufy.connect({ captcha: { captchaId: id, captchaCode: code } });
           } catch (e) { reject(e); }
         });
         eufy.on('tfa request', async () => {
-          if (!verifyHandler) return reject(new Error('2FA vereist — gebruik de setup-wizard of `npm run setup`'));
+          if (!verifyHandler) return reject(new Error('2FA vereist — log in via de browser (het inlogscherm)'));
           try {
             const code = await verifyHandler();
             await eufy.connect({ verifyCode: code });

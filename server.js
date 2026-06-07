@@ -2,11 +2,12 @@
 // the same port. Run with `npm run dev` (development) or `npm start` (production).
 import { createServer } from 'node:http';
 import next from 'next';
-import { cameraService } from './lib/cameraService.js';
-import { createVideoSocket } from './lib/videoSocket.js';
+import { Env } from './src/lib/Env.js';
+import { cameraService } from './src/lib/CameraService.js';
+import { createVideoSocket } from './src/lib/server/VideoSocket.js';
 
-const dev = process.env.NODE_ENV !== 'production';
-const port = Number(process.env.PORT) || 3000;
+const dev = Env.isDev;
+const port = Env.PORT;
 
 const app = next({ dev });
 const handlePage = app.getRequestHandler();

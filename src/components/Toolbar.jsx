@@ -12,7 +12,7 @@ const MODES = [
 const ctrlBtn = 'inline-flex items-center justify-center h-9 px-3 rounded-lg bg-[#0e1014] border border-line text-[#cdd2db] text-sm transition-[transform,border-color,color] hover:border-accent hover:text-ink active:scale-95';
 const iconBtn = 'inline-flex items-center justify-center h-9 min-w-9 px-2.5 rounded-lg bg-[#0e1014] border border-line text-[#cdd2db] transition-[transform,border-color,color] hover:border-accent hover:text-ink active:scale-95';
 
-const Toolbar = ({ mode, onMode, onSwap, onTogglePip, pipOn, mainName, fit, onToggleFit, onFullscreen, onOpenSettings, onToggleDebug }) => (
+export const Toolbar = ({ mode, onMode, onSwap, onTogglePip, pipOn, mainName, fit, onToggleFit, onFullscreen, onOpenSettings, onToggleDebug }) => (
   <div className="flex flex-wrap items-center gap-2 px-3 py-2 bg-surface/85 backdrop-blur border-b border-line z-20">
     <div className="flex items-center gap-2 font-semibold whitespace-nowrap">
       <span className="w-2.5 h-2.5 rounded-full bg-accent shadow-[0_0_10px_var(--color-accent)]" />
@@ -49,5 +49,3 @@ const Toolbar = ({ mode, onMode, onSwap, onTogglePip, pipOn, mainName, fit, onTo
     </div>
   </div>
 );
-
-export default Toolbar;

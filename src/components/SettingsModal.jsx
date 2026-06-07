@@ -1,12 +1,12 @@
 'use client';
 import { useEffect, useState } from 'react';
-import AccountLogin from './AccountLogin.jsx';
-import { postSetup } from './api.js';
+import { AccountLogin } from './AccountLogin.jsx';
+import { postSetup } from '@/lib/client/Api.js';
 
 // Settings as an overlay (not a separate page), so opening it never interrupts the live
 // streams. Shows the Eufy login plus a full read-out per camera — including the REAL
 // live status, so it can't contradict what you see in the viewer.
-const SettingsModal = ({ eufyConfigured, onClose, onConnected }) => {
+export const SettingsModal = ({ eufyConfigured, onClose, onConnected }) => {
   const [data, setData] = useState(null);
   const load = async () => { try { setData(await postSetup('readout')); } catch {} };
   useEffect(() => { load(); const t = setInterval(load, 4000); return () => clearInterval(t); }, []);
@@ -84,5 +84,3 @@ const CameraReadout = ({ cam }) => {
     </div>
   );
 };
-
-export default SettingsModal;

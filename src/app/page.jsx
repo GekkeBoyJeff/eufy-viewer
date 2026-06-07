@@ -3,10 +3,10 @@ import { useEffect, useRef, useState } from 'react';
 import useSWR from 'swr';
 import clsx from 'clsx';
 import { useLocalStorage, useToggle } from '@reactuses/core';
-import Toolbar from '@/components/Toolbar.jsx';
-import CameraPane from '@/components/CameraPane.jsx';
-import AccountLogin from '@/components/AccountLogin.jsx';
-import SettingsModal from '@/components/SettingsModal.jsx';
+import { Toolbar } from '@/components/Toolbar.jsx';
+import { CameraPane } from '@/components/CameraPane.jsx';
+import { AccountLogin } from '@/components/AccountLogin.jsx';
+import { SettingsModal } from '@/components/SettingsModal.jsx';
 
 const DEFAULTS = { mode: 'split-h', mainId: null, pipOn: true, fit: 'contain' };
 // Treat a non-OK response as a real (retryable) error instead of feeding a bad body into

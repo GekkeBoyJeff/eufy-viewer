@@ -1,7 +1,7 @@
 import { EventEmitter } from 'node:events';
 import { spawn } from 'node:child_process';
-import { rtspStreamArgs, snapshotArgs } from '../ffmpegArgs.js';
-import { log, logErr, maskUrl } from '../log.js';
+import { rtspStreamArgs } from '../FfmpegArgs.js';
+import { log, logErr, maskUrl } from '../Log.js';
 
 const RESTART_MIN = 1000;
 const RESTART_MAX = 8000;
@@ -90,19 +90,5 @@ export class RtspSource extends EventEmitter {
     clearTimeout(this._restartTimer);
     this._restartTimer = null;
     if (this._proc) { const p = this._proc; this._proc = null; p.kill('SIGKILL'); }
-  }
-
-  // One JPEG frame, used by the camera test in settings.
-  async snapshot() {
-    return new Promise((resolve) => {
-      const chunks = [];
-      let done = false;
-      const finish = (val) => { if (!done) { done = true; resolve(val); } };
-      const proc = spawn(this._ffmpeg, snapshotArgs(this.camera.url));
-      proc.stdout.on('data', (c) => chunks.push(c));
-      proc.on('close', () => finish(chunks.length ? Buffer.concat(chunks) : null));
-      proc.on('error', () => finish(null));
-      setTimeout(() => { try { proc.kill('SIGKILL'); } catch {} finish(chunks.length ? Buffer.concat(chunks) : null); }, 10000);
-    });
   }
 }
